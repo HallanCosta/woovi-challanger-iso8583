@@ -20,7 +20,7 @@ class SimulatorServer(object):
         
         self.CONNECTION_LIST = []
         self.RECV_BUFFER = 4096
-        self.PORT = 5000
+        self.PORT = 8787
         self.HOST = "localhost"
 
         self.start_server() # start the server
@@ -73,8 +73,13 @@ class SimulatorServer(object):
                         # Wrapped in try-catch block to handle the abrupt TCP program end
                         # (connection reset by peer) by Windows.
 
-                        # Extract the Hex format of the data from the ASCII Byte Array
-                        data = sock.recv(self.RECV_BUFFER).encode("hex")
+                        # Extract the Hex format of the data from the ASCII Byte Array (Python 3 compatible)
+                        chunk = sock.recv(self.RECV_BUFFER)
+
+                        if not chunk:
+                            raise Exception('No data received')
+                        # Convert bytes to hex string
+                        data = chunk.hex()
 
 
                         # echo back the client message
@@ -88,12 +93,26 @@ class SimulatorServer(object):
                             print('[INFO] RES Data Sent: ' + response)
 
                             # encode
-                            encoded_response = bytearray.fromhex(str(response))
-                            sock.send(encoded_response)
+                            try:
+                                encoded_response = bytearray.fromhex(str(response))
+                                print('[INFO] Encoded to: ' + str(len(encoded_response)) + ' bytes')
+                                sock.sendall(encoded_response)
+                            except ValueError as e:
+                                print('[ERROR] Failed to encode response as hex: ' + str(e))
+                                raise
+                            
+                            # Close connection after response (one request per connection)
+                            sock.close()
+                            self.CONNECTION_LIST.remove(sock)
+                            print('[INFO] connection closed')
+                            break
 
                     # client disconnected, so remove from socket list
-                    except:
+                    except Exception as e:
                         # Handle 'Connection Reset by peer exception" graciously.
+                        import traceback
+                        print("[ERROR] Exception processing client: %s" % str(e))
+                        traceback.print_exc()
                         self.broadcast_data(sock, "[INFO] Client (%s, %s) is offline" % addr)
                         print("[INFO] Client (%s, %s) is offline" % addr)
                         sock.close()

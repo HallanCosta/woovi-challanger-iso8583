@@ -371,9 +371,9 @@ class ISO8583:
 			self.BITMAP[0] = self.BITMAP[0] |  self._TMP[2] # need to set bit 1 of first "bit" in bitmap
 			
 		if (bit % 8) == 0:
-			pos = (bit / 8) - 1
+			pos = (bit // 8) - 1
 		else:
-			pos = (bit /8) 
+			pos = (bit // 8) 
 
 		#need to check if the value can be there .. AN , N ... etc ... and the size
 		
