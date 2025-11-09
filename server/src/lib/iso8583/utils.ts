@@ -1,8 +1,8 @@
 /**
- * Utilitários para trabalhar com BCD (Binary Coded Decimal)
+ * utils to workings with BCD (Binary Coded Decimal) or ASCII (American Standard Code for Information Interchange)
  */
 
-import formats from './formats';
+import formats from './formats.ts';
 
 function bcdToStr(buffer: Buffer, length: number): string {
   let result = '';

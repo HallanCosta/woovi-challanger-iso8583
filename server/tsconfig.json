@@ -15,11 +15,13 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "types": ["node", "vitest/globals"]
   },
   "include": [
     "src/**/*"
-  ],
+, "../acquire.js"  ],
   "exclude": [
     "node_modules",
     "dist",

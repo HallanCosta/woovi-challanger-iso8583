@@ -2,8 +2,8 @@
  * ISO8583 Parser Functions
  */
 
-import { bcdToStr } from './utils';
-import formats, { ISO8583FieldFormat } from './formats';
+import { bcdToStr } from './utils.ts';
+import formats, { type ISO8583FieldFormat } from './formats.ts';
 
 /**
  * Decodifica bitmap ISO8583

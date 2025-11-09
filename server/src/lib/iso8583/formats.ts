@@ -1,5 +1,4 @@
-// Formato dos campos ISO8583
-// Baseado no padrão ISO 8583:1987
+// Formats fields ISO8583
 
 export interface ISO8583FieldFormat {
   ContentType: string;

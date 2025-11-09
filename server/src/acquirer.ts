@@ -1,15 +1,16 @@
 import * as net from 'net';
 
-import iso8583 from './lib/iso8583';
+import iso8583 from './lib/iso8583/index.ts';
+import { SALES_RESPONSE_CODES } from './lib/iso8583/enums/response.ts';
 
 const PORT = 9218
 const HOST = 'localhost'
 
 // Tipo de transação para testar: 'sale', 'auth', 'void', 'reversal', 'refund'
-const TRANSACTION_TYPE = 'sale'; // Padrão: sale
+const TRANSACTION_TYPE = 'sale';
 
 // Código de resposta esperado (últimos 2 dígitos do valor)
-const RESPONSE_CODE_SALE = '00'; // '00'=Aprovado, '14'=Cartão Inválido, '58'=Transação Inválida, '57'=Reembolso Não Permitido, etc.
+const RESPONSE_CODE_APPROVED = '00';
 
 const client = new net.Socket();
 
@@ -21,13 +22,13 @@ client.connect(PORT, HOST, () => {
     console.log('='.repeat(60));
     
     const options = {
-      amount: '000000005230',             // Value to response code
+      amount: '000000005200',             // Value to response code
       transactionId: '000123',            // Transaction ID (6 dígitos)
       acquirerInstitution: '01020000000', // Code acquirer (LLVAR)
       merchantId: 'WOOVIMERCHANT001',     // ID do merchant (hex) - ajustado para length par
       currency: '764',                    // Currency (hex) - 764 = BRL
-      cardNumber: '390700000',            // Card number with brand pix (PAN)
-      processingCode: '000000',           // Processing code
+      cardNumber: '290700000',            // Card number with brand pix (PAN)
+      processingCode: '123456',           // Processing code
     };
 
     // Validate pan number and set processing code pix
@@ -63,12 +64,12 @@ client.connect(PORT, HOST, () => {
     const buffer = transactionHandler(options);
 
     console.log('\n📋 Transação customizada:');
-    console.log(`   Valor: R$ 50,${RESPONSE_CODE_SALE}`);
+    console.log(`   Valor: R$ 50,${RESPONSE_CODE_APPROVED}`);
     console.log(`   ID: ${options.transactionId}`);
     console.log(`   Terminal: ${options.acquirerInstitution}`);
     console.log(`   Moeda: BRL (${options.currency})`);
     console.log(`   Cartão: ${options.cardNumber}`);
-    console.log(`   Código de resposta esperado: ${RESPONSE_CODE_SALE}`);
+    console.log(`   Código de resposta esperado: ${RESPONSE_CODE_APPROVED}`);
     
     console.log(`\n📦 Buffer (${buffer.length} bytes)`);
     console.log(`Hex: ${buffer.toString('hex')}\n`);
@@ -83,12 +84,15 @@ client.on('data', (data: Buffer) => {
 
     const responseBufferWithoutHeader = data.subarray(7);
     const parsedResponse = iso8583.parseIsoFromBuffer(responseBufferWithoutHeader);
+    const responseCode: string = parsedResponse['39'];
     iso8583.describeFields(parsedResponse);
 
-    if (parsedResponse['39'] !== RESPONSE_CODE_SALE) {
-      console.log('❌ Transação rejeitada:', parsedResponse['39']);
+    if (responseCode !== RESPONSE_CODE_APPROVED) {
+      const saleResponseCode = SALES_RESPONSE_CODES.find(s => s.res === responseCode);
+      const description = saleResponseCode?.desc ?? 'Invalid processing code';
+      console.log(`❌ ${description}:`, responseCode);
     } else {
-      console.log('✅ Transação aprovada:', parsedResponse['39']);
+      console.log('✅ Transação aprovada:', responseCode);
     }
 
     client.destroy();

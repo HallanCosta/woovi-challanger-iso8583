@@ -2,7 +2,7 @@
  * ISO8583 Message Creators
  */
 
-import { strToBCD } from './utils';
+import { strToBCD } from './utils.ts';
 
 export interface MessageOptions {
   processingCode: string;

@@ -4,10 +4,10 @@
  * Parser supports ISO8583 messages in BCD format
  */
 
-import formats from './formats';
-import messages from './messages';
-import utils from './utils';
-import parser from './parser';
+import formats from './formats.ts';
+import messages from './messages.ts';
+import utils from './utils.ts';
+import parser from './parser.ts';
 
 export default {
   ...messages,
