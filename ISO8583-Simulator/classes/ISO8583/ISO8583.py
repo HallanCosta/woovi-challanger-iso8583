@@ -60,7 +60,7 @@ class ISO8583:
 	#W = size of the information that N need to has
 	# K = type os values a, an, n, ansb, b
 	_BITS_VALUE_TYPE[1] = ['BME','Bit Map Extended','B',16,'b']
-	_BITS_VALUE_TYPE[2] = ['2','Primary account number (PAN)','LL',19,'n']
+	_BITS_VALUE_TYPE[2] = ['2','Primary account number (PAN) or PIX identifier (BIN 3907 for PIX)','LL',19,'n']
 	_BITS_VALUE_TYPE[3] = ['3','Precessing code','N',6,'n']
 	_BITS_VALUE_TYPE[4] = ['4','Amount transaction','N',12,'n']
 	_BITS_VALUE_TYPE[5] = ['5','Amount reconciliation','N',12,'n']
@@ -1037,8 +1037,13 @@ class ISO8583:
 				_TMP = {}
 				_TMP['bit'] =  "%d" % cont
 				_TMP['type'] = self.getBitType(cont)
-				_TMP['value'] = self.BITMAP_VALUES[cont]
-				ret.append(_TMP)
+				if self.getBitType(cont) == 'LL':
+					_TMP['value'] = self.BITMAP_VALUES[cont][2:]  # Skip length indicator
+				elif self.getBitType(cont) == 'LLL':
+					_TMP['value'] = self.BITMAP_VALUES[cont][3:]  # Skip length indicator
+				else:
+					_TMP['value'] = self.BITMAP_VALUES[cont]
+					ret.append(_TMP)
 		return ret
 		
 	################################################################################################	

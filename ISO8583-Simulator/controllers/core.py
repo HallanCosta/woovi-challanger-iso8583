@@ -38,6 +38,7 @@ class Controller(object):
         mti, \
         processing_code, \
         transaction_amount, \
+        card_number, \
         req_ISO_dict = msgObj.parse_ISOPayload()
 
 

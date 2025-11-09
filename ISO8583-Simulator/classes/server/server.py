@@ -20,7 +20,7 @@ class SimulatorServer(object):
         
         self.CONNECTION_LIST = []
         self.RECV_BUFFER = 4096
-        self.PORT = 8787
+        self.PORT = 9218
         self.HOST = "localhost"
 
         self.start_server() # start the server
@@ -75,7 +75,7 @@ class SimulatorServer(object):
 
                         # Extract the Hex format of the data from the ASCII Byte Array (Python 3 compatible)
                         chunk = sock.recv(self.RECV_BUFFER)
-
+                        
                         if not chunk:
                             raise Exception('No data received')
                         # Convert bytes to hex string

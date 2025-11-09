@@ -55,14 +55,14 @@ class Message(object):
 
     # Individual components
     def get_length(self): # Header
-        self.req_length = self.req_data[0:4] # this is fixed and defined 2 byte representation
+        self.req_length = self.req_data[0:4] # 4 hex chars for 2 bytes
 
     def get_TPDU(self): # Header
-        self.req_TPDU = self.req_data[4:14]
+        self.req_TPDU = self.req_data[4:14] # 10 hex chars for 5 bytes
 
 
     def get_ISOPayload(self): #body
-        self.req_body = self.req_ISOPayload = self.req_data[14:]
+        self.req_body = self.req_ISOPayload = self.req_data[14:] # after length 4 + TPDU 10
 
 
 
@@ -108,18 +108,22 @@ class Message(object):
 
         processing_code = None
         transaction_amount = None
+        card_number = None
 
         for DE in req_ISO_dict:
             print(('[INFO][REQ](1) Bit %s | Type %s | Value = %s' % (DE['bit'], DE['type'], DE['value'])))
 
             # Extract some key DE
+            if DE['bit'] == '2':
+                card_number = DE['value']
+
             if DE['bit'] == '3':
                 processing_code = DE['value']
 
             if DE['bit'] == '4':
                 transaction_amount = DE['value']
 
-        return MTI, processing_code, transaction_amount, req_ISO_dict
+        return MTI, processing_code, transaction_amount, card_number, req_ISO_dict
 
 
 

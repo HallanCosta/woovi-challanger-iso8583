@@ -55,16 +55,38 @@ class Sale(object):
             },
         ]
 
-    def response(self, expected_code, processing_code):
+    def get_card_number(self, req_ISO_dict):
+        for DE in req_ISO_dict:
+            if DE['bit'] == '2':
+                return DE['value']
+        return ''
 
-        if processing_code == 000000 or processing_code == 200000: # Normal Sales, Refund Sales
+    def response(self, expected_code, processing_code, req_ISO_dict):
+
+        card_number = self.get_card_number(req_ISO_dict)
+
+        # Validate card brand
+        if card_number:
+            if card_number.startswith('4'):
+                print('[INFO] Visa card detected')
+            elif card_number.startswith('5'):
+                print('[INFO] Mastercard detected')
+            elif card_number.startswith('3907'):
+                print('[INFO] PIX transaction detected (BIN 3907)')
+            else:
+                print('[INFO] Unknown card brand')
+                # For unknown, can force invalid card
+                if expected_code == '00':
+                    return self.res_mti, '14'  # Invalid Card
+
+        if processing_code == '000000' or processing_code == '200000' or processing_code == '900000': # Normal Sales, Refund Sales
             # Normal Sales
             for d in self.response_code_map:
-                if expected_code is d['req']:
+                if expected_code == d['req']:
                     return self.res_mti, d['res']
-                else:
-                    return self.res_mti, '00'
-                    # Return Success for any other codes
+
+            # Return Success for any other codes
+            return self.res_mti, '00'
         else:
             return self.res_mti, '99'
 

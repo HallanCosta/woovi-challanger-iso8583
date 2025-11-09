@@ -12,12 +12,19 @@ class Delegate(object):
         self.req_ISO_dict = req_ISO_dict
         self.req_MTI = mti
         self.req_processing_code = processing_code
-
+        self.req_card_number = self.get_card_number_from_dict()
 
         self.expected_response_code = transaction_amount[-2:]  # get the decimal value of the transaction amount DE4
         print(('[INFO][REQ]Expected Response code (Decimal Value) of Transaction Amount:' + self.expected_response_code))
+        print(('[INFO][REQ]Card Number:' + str(self.req_card_number)))
         # Get Response Code in Bit 39
         # self.get_response_bit()
+
+    def get_card_number_from_dict(self):
+        for DE in self.req_ISO_dict:
+            if DE['bit'] == '2':
+                return DE['value']
+        return ''
 
     def get_response_bit(self):
 
@@ -40,10 +47,10 @@ class Delegate(object):
                 :returns MTI, and response code
             '''
 
-            if self.req_processing_code == '000000':  # Sales
+            if self.req_processing_code == '000000' or self.req_processing_code == '900000':  # Sales
 
                 saleObj = Sale()
-                return saleObj.response(self.expected_response_code, self.req_processing_code)
+                return saleObj.response(self.expected_response_code, self.req_processing_code, self.req_ISO_dict)
 
             elif self.req_processing_code == '020000':  # Void
                 voidObj = Void()
@@ -52,11 +59,15 @@ class Delegate(object):
 
             elif self.req_processing_code == '200000':  # Refund Sales
                 saleObj = Sale()
-                return saleObj.response(self.expected_response_code, self.req_processing_code)
+                return saleObj.response(self.expected_response_code, self.req_processing_code, self.req_ISO_dict)
 
             elif self.req_processing_code == '220000':  # Void Refund Sales
                 voidObj = Void()
                 return voidObj.response(self.expected_response_code, self.req_processing_code)
+
+            else:  # For other processing codes, like PIX (e.g., 941111), treat as sale
+                saleObj = Sale()
+                return saleObj.response(self.expected_response_code, self.req_processing_code, self.req_ISO_dict)
 
 
         elif self.req_MTI == '0400': # Reversal
