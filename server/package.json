@@ -1,0 +1,39 @@
+{
+  "name": "woovi-challanger-iso8583",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "eslint": "^8.54.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.9.3",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "@koa/router": "^14.0.0",
+    "@micham/iso8583": "^2.0.0",
+    "iso_8583": "^2.2.9",
+    "koa": "^3.1.1",
+    "koa-bodyparser": "^4.4.1"
+  }
+}
