@@ -1,6 +1,7 @@
 import acquirer from '../src/acquirer.ts';
+import { config } from '../src/config.ts';
 
-const cardNumber = process.env.PREFIX === '3907' ? '390700000' : '516200000';
+const cardNumber = config.PREFIX === '3907' ? '390700000' : '516200000';
 
 const transaction = {
   amount: '000000005200',             // Value to response code
@@ -12,7 +13,6 @@ const transaction = {
   // cardNumber: '390700000',            // Card number with brand credit card (PAN)
   // cardNumber: '516200000',            // Card number with brand credit card (PAN)
   // cardNumber: '402600000',            // Card number with brand creadit card (PAN)
-  processingCode: '123456',           // Processing code
 };
 
 // Execute test request success sale

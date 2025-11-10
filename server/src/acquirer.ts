@@ -40,6 +40,12 @@ async function acquirer(transaction: Transaction): Promise<any> {
         transaction.cardNumber.startsWith(BRAND_PREFIX.VISA)
       ) {
         transaction.processingCode = PROCESSING_CODE.CARD;
+      } 
+
+      if (!transaction.processingCode) {
+        client.destroy();
+        resolve({ success: false, message: 'Brand not supported' });
+        return;
       }
 
       const transactionHandlers: Record<string, (opts: Transaction) => Buffer> = {
@@ -52,7 +58,7 @@ async function acquirer(transaction: Transaction): Promise<any> {
       const transactionHandler = transactionHandlers[TRANSACTION_TYPE];
       if (!transactionHandler) {
         client.destroy();
-        reject(new Error('Invalid transaction type'));
+        resolve({ success: false, message: 'Invalid transaction type' });
         return;
       }
 
@@ -92,19 +98,37 @@ async function acquirer(transaction: Transaction): Promise<any> {
       if (!isApproved) {
         const saleResponseCode = iso8583.enums.SALES_RESPONSE_CODES
           .find(sale => sale.req === responseCode);
-          
+
         const description = saleResponseCode?.desc ?? 'Invalid processing code';
         
-        if (DEBUG) console.log(`❌ ${description}:`, responseCode);
-        resolve({ success: false, responseCode, message: description });
+        if (DEBUG) {
+          console.log(`❌ ${description}:`, responseCode)
+          console.log(`❌ Processing Code Name: ${processingCodeName}`)
+        }
+
+        resolve({ 
+          success: false, 
+          responseCode, 
+          message: `${description}` ,
+          type: processingCodeName
+        });
 
         return;
       }
       
       client.destroy();
 
-      if (DEBUG) console.log(`✅ Success Transaction (${processingCodeName}):`, responseCode);
-      resolve({ success: true, responseCode, message: `Success Transaction (${processingCodeName})` });
+      if (DEBUG) {
+        console.log(`✅ Success Transaction:`, responseCode);
+        console.log(`✅ Processing Code Name: ${processingCodeName}`);
+      }
+
+      resolve({ 
+        success: true, 
+        responseCode, 
+        message: `Success Transaction` , 
+        type: processingCodeName 
+      });
     });
 
     client.on('error', (error: Error) => {
