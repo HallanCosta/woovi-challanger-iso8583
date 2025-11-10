@@ -21,7 +21,7 @@ class SimulatorServer(object):
         self.CONNECTION_LIST = []
         self.RECV_BUFFER = 4096
         self.PORT = 9218
-        self.HOST = "localhost"
+        self.HOST = "0.0.0.0"
 
         self.start_server() # start the server
 
