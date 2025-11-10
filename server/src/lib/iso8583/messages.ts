@@ -2,20 +2,21 @@
  * ISO8583 Message Creators
  */
 
+import type { Transaction } from '../../types.ts';
 import { strToBCD } from './utils.ts';
 
-export interface MessageOptions {
-  processingCode: string;
-  amount: string;
-  transactionId: number;
-  acquirerInstitution: string;
-  merchantId: string;
-  currency: string;
-  originalTransactionId?: string;
-}
+// export interface MessageOptions {
+//   processingCode: string;
+//   amount: string;
+//   transactionId: number;
+//   acquirerInstitution: string;
+//   merchantId: string;
+//   currency: string;
+//   originalTransactionId?: string;
+// }
 
 // Build de message default ISO8583
-function buildIso8583Message(options: MessageOptions, customFields: any = {}): Buffer {
+function buildIso8583Message(options: Transaction, customFields: any = {}): Buffer {
   const now = new Date();
   const pad = (num: number) => String(num).padStart(2, '0');
   const month = pad(now.getMonth() + 1);
@@ -63,18 +64,18 @@ function buildIso8583Message(options: MessageOptions, customFields: any = {}): B
 
 
 // Create message sale on format simulator
-function createPurchaseMessage(options: MessageOptions): Buffer {
+function createPurchaseMessage(options: Transaction): Buffer {
   return buildIso8583Message(options, { mti: '0200', processingCode: '000000' });
 }
 
 // Create message sale on format simulator
-function createAuthMessage(options: MessageOptions): Buffer {
+function createAuthMessage(options: Transaction): Buffer {
   return buildIso8583Message(options, { mti: '0100', processingCode: '000000' });
 }
 
 // Create message void on format simulator
-function createVoidMessage(options: MessageOptions): Buffer {
-  const { originalTransactionId = '000001' } = options;
+function createVoidMessage(options: Transaction): Buffer {
+  const originalTransactionId = '000001'
   // DE37: Retrieval reference number (12 chars ASCII)
   const de37 = Buffer.from(originalTransactionId.padEnd(12, ' '), 'ascii');
 
@@ -86,8 +87,8 @@ function createVoidMessage(options: MessageOptions): Buffer {
 }
 
 // Create message reversal on format simulator
-function createReversalMessage(options: MessageOptions): Buffer {
-  const { originalTransactionId = '000001' } = options;
+function createReversalMessage(options: Transaction): Buffer {
+  const originalTransactionId = '000001'
   // DE37: Retrieval reference number (12 chars ASCII)
   const de37 = Buffer.from(originalTransactionId.padEnd(12, ' '), 'ascii');
 

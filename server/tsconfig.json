@@ -21,7 +21,7 @@
   },
   "include": [
     "src/**/*"
-, "../acquire.js"  ],
+, "../acquire.js", "scripts/acquirer-executable.ts"  ],
   "exclude": [
     "node_modules",
     "dist",

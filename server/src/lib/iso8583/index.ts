@@ -8,10 +8,12 @@ import formats from './formats.ts';
 import messages from './messages.ts';
 import utils from './utils.ts';
 import parser from './parser.ts';
+import enums from './enums/index.ts';
 
 export default {
   ...messages,
   ...utils,
   ...formats,
-  ...parser
+  ...parser,
+  enums,
 };

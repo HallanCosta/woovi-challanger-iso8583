@@ -49,6 +49,11 @@ function llvarASCII(str: string): Buffer {
   ]);
 }
 
+function amountToCurrency(value: string): string {
+  const cents = parseInt(value, 10)
+  return (cents / 100).toFixed(2)
+}
+
 /**
  * Describe os feidls parsed of message ISO8583
  * @param parsedFields - Fields parsed
@@ -64,14 +69,15 @@ function describeFields(parsedFields: Record<string, any>): void {
   console.log('');
 }
 
-export { bcdToStr, strToBCD, llvarBCD, llvarASCII, describeFields };
+export { bcdToStr, strToBCD, llvarBCD, llvarASCII, describeFields, amountToCurrency };
 
 const utils = {
   bcdToStr,
   strToBCD,
   llvarBCD,
   llvarASCII,
-  describeFields
+  describeFields,
+  amountToCurrency
 };
 
 export default utils;
