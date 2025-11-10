@@ -19,9 +19,7 @@
     "noEmit": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": [
-    "src/**/*"
-, "../acquire.js", "scripts/acquirer-executable.ts"  ],
+  "include": ["src/**/*", "../acquirer.ts", "scripts/acquirer.ts"  ],
   "exclude": [
     "node_modules",
     "dist",

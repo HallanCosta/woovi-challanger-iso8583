@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "node --experimental-strip-types --env-file .env --watch src/index.ts",
-    "dev:acquirer": "node --experimental-strip-types --env-file .env.scripts scripts/acquirer.ts",
+    "dev": "node --experimental-strip-types --env-file .env --watch src/server.ts",
     "dev:acquirer:card": "PREFIX=4026 node --experimental-strip-types --env-file .env.scripts scripts/acquirer.ts",
     "dev:acquirer:pix": "PREFIX=3907 node --experimental-strip-types --env-file .env.scripts scripts/acquirer.ts",
     "build": "tsc",
@@ -23,6 +22,7 @@
   "devDependencies": {
     "@types/koa": "^3.0.1",
     "@types/koa-bodyparser": "^4.3.13",
+    "@types/koa__cors": "^5.0.1",
     "@types/koa__router": "^12.0.5",
     "@types/node": "^24.9.2",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
@@ -35,6 +35,7 @@
     "vitest": "^1.0.0"
   },
   "dependencies": {
+    "@koa/cors": "^5.0.0",
     "@koa/router": "^14.0.0",
     "@micham/iso8583": "^2.0.0",
     "iso_8583": "^2.2.9",
