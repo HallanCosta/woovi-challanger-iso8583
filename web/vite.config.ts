@@ -14,5 +14,10 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src')
     }
+  },
+  server: {
+    host: true,
+    port: 4174,
+    allowedHosts: ["iso8583.hallancosta.com"]
   }
 })
