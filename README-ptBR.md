@@ -14,8 +14,8 @@ Tratando Processamento de Pix e Cartão usando iso8583:<br>
 OBS: Frontend só testa transação com prefixo 3907 simulando um bandeira pix, mas é possível testar outras bandeiras ativando a feature flag no frontend
 
 ## ☁️ Live demo
-- **Produção (Testador web):** https://iso8583.hallancosta.com (temporarily offline)
-- **Produção (Servidor):** https://server-iso8583.hallancosta.com (temporarily offline)
+- **Produção (Testador web):** https://iso8583.hallancosta.com (ON) 🟢
+- **Produção (Servidor):** https://server-iso8583.hallancosta.com (ON) 🟢
 
 ## 📸 Pré visualização
 <img src="https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/web/screenshots/transaction-approved.png?raw=true">

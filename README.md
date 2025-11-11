@@ -14,8 +14,8 @@ Processing Pix and Card transactions using ISO8583:<br>
 NOTE: Frontend only tests transactions with prefix 3907 simulating a PIX flag, but it's possible to test other flags by activating the feature flag in the frontend
 
 ## ☁️ Live Demo
-- **Production (Web Tester):** https://iso8583.hallancosta.com (temporarily offline)
-- **Production (Server):** https://server-iso8583.hallancosta.com (temporarily offline)
+- **Production (Web Tester):** https://iso8583.hallancosta.com (ON) 🟢
+- **Production (Server):** https://server-iso8583.hallancosta.com (ON) 🟢
 
 ## 📸 Preview
 <img src="https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/web/screenshots/transaction-approved.png?raw=true">
