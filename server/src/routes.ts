@@ -4,6 +4,10 @@ import type { Transaction } from './types.ts';
 
 const router = new Router();
 
+router.get('/', async (ctx) => {
+  ctx.body = { message: 'Server is running...' };
+});
+
 router.post('/transaction', async (ctx) => {
   const transaction = ctx.request.body as Transaction;
 
