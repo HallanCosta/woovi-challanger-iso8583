@@ -13,10 +13,14 @@ import { CheckCircle2, XCircle, AlertCircle, CreditCard, Info } from "lucide-rea
 import './styles/globals.css'
 
 // Feature flags para bandeiras
+const mastercardEnabled = import.meta.env.VITE_BRAND_MASTERCARD_ENABLED === "true"
+const visaEnabled = import.meta.env.VITE_BRAND_VISA_ENABLED === "true"
+const pixEnabled = import.meta.env.VITE_BRAND_PIX_ENABLED === "true"
+
 const FEATURE_FLAGS = {
-  BRAND_MASTERCARD: false,
-  BRAND_VISA: false,
-  BRAND_PIX: true,
+  BRAND_MASTERCARD: mastercardEnabled,
+  BRAND_VISA: visaEnabled,
+  BRAND_PIX: pixEnabled,
 }
 
 const CARD_BRANDS = {
@@ -177,7 +181,7 @@ export default function App() {
         currency: "764",
       }
 
-      const response = await fetch("http://localhost:4278/transaction", {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL_API}/transaction`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
