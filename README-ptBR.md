@@ -1,6 +1,6 @@
 # 🏦 Woovi Challanger - ISO8583
 
-[🇺🇸 Leia esse README em Inglês](https://github.com/HallanCosta/woovi-challanger-kyc/blob/main/README.md)
+[🇺🇸 Leia esse README em Inglês](https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/README.md)
 
 <hr>
 
