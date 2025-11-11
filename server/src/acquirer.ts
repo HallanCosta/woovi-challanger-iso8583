@@ -109,7 +109,8 @@ async function acquirer(transaction: Transaction): Promise<any> {
         resolve({ 
           success: false, 
           responseCode, 
-          message: `${description}` ,
+          amount: transaction.amount,
+          message: description,
           type: processingCodeName
         });
 
@@ -126,7 +127,8 @@ async function acquirer(transaction: Transaction): Promise<any> {
       resolve({ 
         success: true, 
         responseCode, 
-        message: `Success Transaction` , 
+        amount: transaction.amount,
+        message: `Success Transaction`, 
         type: processingCodeName 
       });
     });
