@@ -95,12 +95,12 @@ async function acquirer(transaction: Transaction): Promise<any> {
 
       const isApproved = responseCode === RESPONSE_CODE_APPROVED;
 
-      if (!isApproved) {
-        const saleResponseCode = iso8583.enums.SALES_RESPONSE_CODES
-          .find(sale => sale.req === responseCode);
+      const saleResponseCode = iso8583.enums.SALES_RESPONSE_CODES
+        .find(sale => sale.req === responseCode);
 
-        const description = saleResponseCode?.desc ?? 'Invalid processing code';
-        
+      const description = saleResponseCode?.desc ?? 'Invalid processing code';
+
+      if (!isApproved) {
         if (DEBUG) {
           console.log(`❌ ${description}:`, responseCode)
           console.log(`❌ Processing Code Name: ${processingCodeName}`)
@@ -128,7 +128,7 @@ async function acquirer(transaction: Transaction): Promise<any> {
         success: true, 
         responseCode, 
         amount: transaction.amount,
-        message: `Success Transaction`, 
+        message: description, 
         type: processingCodeName 
       });
     });
