@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 4174",
+    "dev": "NODE_ENV=development vite --host 0.0.0.0 --port 4174",
+    "dev:production": "NODE_ENV=production vite --host 0.0.0.0 --port 4174",
     "restart:production": "pm2 restart ecosystem.config.cjs",
     "start:production": "pm2 start ecosystem.config.cjs",
     "stop:production": "pm2 stop ecosystem.config.cjs",

@@ -19,7 +19,7 @@ module.exports = {
       name: "iso8583-web",
       cwd: "./web",
       script: "pnpm",
-      args: "dev",
+      args: "dev:production",
       env: {
         NODE_ENV: "development"
       },

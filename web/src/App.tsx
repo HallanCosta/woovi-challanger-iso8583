@@ -181,7 +181,10 @@ export default function App() {
         currency: "764",
       }
 
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL_API}/transaction`, {
+      const nodeEnv = import.meta.env.NODE_ENV
+      const apiBaseUrl = nodeEnv === "development" ? import.meta.env.VITE_BASE_URL_API_LOCAL : import.meta.env.VITE_BASE_URL_API_PRODUCTION
+
+      const response = await fetch(`${apiBaseUrl}/transaction`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -382,11 +385,11 @@ export default function App() {
                   />
                   {errors.amount && <p className="text-sm text-destructive">{errors.amount.message}</p>}
 
-                  { amount && 
+                  {/* { amount && 
                     <p className="text-sm text-muted-foreground">
                       Valor formatado: {formatCurrency(amount.replace(/\./g, "").replace(",", "."))}
                     </p>
-                  }
+                  } */}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
