@@ -31,7 +31,7 @@ function buildIso8583Message(options: Transaction, customFields: any = {}): Buff
   // const bitmap = Buffer.from('7238000101c08080', 'hex');
 
   // Campos BCD
-  const de03 = strToBCD(options.processingCode, 3);
+  const de03 = strToBCD(options.processingCode || '123456', 3);
   // const de02 = strToBCD('3907', 5);
 
   const de04 = strToBCD(options.amount, 6);

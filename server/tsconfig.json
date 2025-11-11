@@ -16,10 +16,11 @@
     "declarationMap": true,
     "sourceMap": true,
     "allowImportingTsExtensions": true,
+    "composite": true,
     "noEmit": true,
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*", "../acquirer.ts", "scripts/acquirer.ts"  ],
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules",
     "dist",

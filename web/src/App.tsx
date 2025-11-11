@@ -48,6 +48,7 @@ type TransactionResponse = {
   responseCode: string
   message: string
   type: string
+  brandName: string
 }
 
 export default function App() {
@@ -176,7 +177,7 @@ export default function App() {
         currency: "764",
       }
 
-      const response = await fetch("http://localhost:4000/transaction", {
+      const response = await fetch("http://localhost:4278/transaction", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -204,7 +205,7 @@ export default function App() {
     } catch (error) {
       toast({
         title: "⚠️ Erro de conexão",
-        description: "Não foi possível conectar ao servidor. Verifique se está rodando em http://localhost:4000",
+        description: "Não foi possível conectar ao servidor. Verifique se está rodando em http://localhost:4278",
         variant: "destructive",
       })
     } finally {
@@ -474,6 +475,11 @@ export default function App() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Valor</span>
                       <Badge>{formatResponseAmount(lastResponse.amount)}</Badge>
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Nome da Bandeira</span>
+                      <Badge>{lastResponse.brandName}</Badge>
                     </div>
                   </div>
 

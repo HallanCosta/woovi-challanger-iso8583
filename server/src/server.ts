@@ -9,7 +9,7 @@ app.use(cors());
 app.use(bodyParser());
 app.use(router.routes()).use(router.allowedMethods());
 
-const PORT = Number(process.env.SERVER_PORT) || 4000;
+const PORT = Number(process.env.SERVER_PORT) || 4278;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

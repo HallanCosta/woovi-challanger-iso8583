@@ -7,7 +7,7 @@
 import * as net from 'net';
 
 import iso8583 from './lib/iso8583/index.ts';
-import { BRAND_PREFIX } from './enums/brands.ts';
+import { BRAND_PREFIX, BRAND_NAMES } from './enums/brands.ts';
 import { PROCESSING_CODE } from './enums/processingCode.ts';
 
 import type { Transaction } from './types.ts';
@@ -22,6 +22,22 @@ async function acquirer(transaction: Transaction): Promise<any> {
   return new Promise((resolve, reject) => {
     const client = new net.Socket();
 
+    // Validate and set processing code
+    if (transaction.cardNumber.startsWith(BRAND_PREFIX.PIX)) {
+      transaction.processingCode = PROCESSING_CODE.PIX;
+    } 
+    else if (
+      transaction.cardNumber.startsWith(BRAND_PREFIX.MASTERCARD) || 
+      transaction.cardNumber.startsWith(BRAND_PREFIX.VISA)
+    ) {
+      transaction.processingCode = PROCESSING_CODE.CARD;
+    } 
+
+    const processingCodeName = transaction.processingCode === PROCESSING_CODE.PIX ? "Pix" : "Card";
+    const prefix = transaction.cardNumber.slice(0, 4) as keyof typeof BRAND_NAMES;
+    const brandName = BRAND_NAMES[prefix] ?? 'Unknown';
+
+    // Connect simulator
     client.connect(PORT, HOST, () => {
       if (DEBUG) {
         console.log(`Connected to simulator at ${HOST}:${PORT}`);
@@ -31,20 +47,15 @@ async function acquirer(transaction: Transaction): Promise<any> {
         console.log('='.repeat(60));
       }
 
-      // Validate and set processing code
-      if (transaction.cardNumber.startsWith(BRAND_PREFIX.PIX)) {
-        transaction.processingCode = PROCESSING_CODE.PIX;
-      } 
-      else if (
-        transaction.cardNumber.startsWith(BRAND_PREFIX.MASTERCARD) || 
-        transaction.cardNumber.startsWith(BRAND_PREFIX.VISA)
-      ) {
-        transaction.processingCode = PROCESSING_CODE.CARD;
-      } 
-
       if (!transaction.processingCode) {
         client.destroy();
-        resolve({ success: false, message: 'Brand not supported' });
+        resolve({ 
+          success: false, 
+          message: 'Brand not supported',
+          responseCode: '99',
+          processingCodeName,
+          brandName
+        });
         return;
       }
 
@@ -58,7 +69,12 @@ async function acquirer(transaction: Transaction): Promise<any> {
       const transactionHandler = transactionHandlers[TRANSACTION_TYPE];
       if (!transactionHandler) {
         client.destroy();
-        resolve({ success: false, message: 'Invalid transaction type' });
+        resolve({ 
+          success: false, 
+          message: 'Invalid transaction type',
+          processingCodeName,
+          brandName
+        });
         return;
       }
 
@@ -72,6 +88,7 @@ async function acquirer(transaction: Transaction): Promise<any> {
         console.log(`   Currency: BRL (${transaction.currency})`);
         console.log(`   Card Number: ${transaction.cardNumber}`);
         console.log(`   Processing Code: ${transaction.processingCode}`);
+        console.log(`   Brand Name: ${brandName}`);
         
         console.log(`\n📦 Buffer (${buffer.length} bytes)`);
         console.log(`Hex: ${buffer.toString('hex')}\n`);
@@ -82,6 +99,7 @@ async function acquirer(transaction: Transaction): Promise<any> {
       client.write(buffer);
     });
 
+    // Received buffer data
     client.on('data', (data: Buffer) => {
       if (DEBUG) {
         console.log(`📦 Response received (${data.length} bytes)`);
@@ -91,7 +109,6 @@ async function acquirer(transaction: Transaction): Promise<any> {
       const responseBufferWithoutHeader = data.subarray(7);
       const parsedResponse = iso8583.parseIsoFromBuffer(responseBufferWithoutHeader);
       const responseCode: string = parsedResponse['39'];
-      const processingCodeName = transaction.processingCode === PROCESSING_CODE.PIX ? "Pix" : "Card";
 
       const isApproved = responseCode === RESPONSE_CODE_APPROVED;
 
@@ -101,9 +118,11 @@ async function acquirer(transaction: Transaction): Promise<any> {
       const description = saleResponseCode?.desc ?? 'Invalid processing code';
 
       if (!isApproved) {
+        
         if (DEBUG) {
           console.log(`❌ ${description}:`, responseCode)
           console.log(`❌ Processing Code Name: ${processingCodeName}`)
+          console.log(`❌ Brand Name: ${brandName}`)
         }
 
         resolve({ 
@@ -111,7 +130,8 @@ async function acquirer(transaction: Transaction): Promise<any> {
           responseCode, 
           amount: transaction.amount,
           message: description,
-          type: processingCodeName
+          type: processingCodeName,
+          brandName
         });
 
         return;
@@ -122,6 +142,7 @@ async function acquirer(transaction: Transaction): Promise<any> {
       if (DEBUG) {
         console.log(`✅ Success Transaction:`, responseCode);
         console.log(`✅ Processing Code Name: ${processingCodeName}`);
+        console.log(`✅ Brand Name: ${brandName}`);
       }
 
       resolve({ 
@@ -129,7 +150,8 @@ async function acquirer(transaction: Transaction): Promise<any> {
         responseCode, 
         amount: transaction.amount,
         message: description, 
-        type: processingCodeName 
+        type: processingCodeName,
+        brandName 
       });
     });
 
