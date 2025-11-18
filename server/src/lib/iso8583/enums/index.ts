@@ -6,6 +6,6 @@
 
 import { SALES_RESPONSE_CODES } from './response.ts';
 
-export default {
+export {
   SALES_RESPONSE_CODES,
 };

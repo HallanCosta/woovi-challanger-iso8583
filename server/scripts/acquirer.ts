@@ -1,6 +1,7 @@
 import acquirer from '../src/acquirer.ts';
 import { config } from '../src/config.ts';
 import { CARD_NUMBERS } from '../src/enums/cardNumbers.ts';
+import { closeIssuerConnection } from '../src/tcpConnectionManager.ts';
 
 const cardNumbers = {
   '3907': CARD_NUMBERS.PIX,
@@ -23,4 +24,5 @@ const transaction = {
 // Execute test request success sale
 (async function() {
   await acquirer(transaction);
+  closeIssuerConnection()
 })()

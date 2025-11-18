@@ -4,168 +4,185 @@
  * Cards with prefix (5162) are cards that issue the processing code (000000) for the transaction to be processed via Card.
  * Cards with prefix (4026) are cards that issue the processing code (000000) for the transaction to be processed via Card.
  */
-import * as net from 'net';
 
-import iso8583 from './lib/iso8583/index.ts';
+import { once } from 'node:events';
+import { Socket } from 'node:net';
+
+import ISO from './lib/iso8583/index.ts';
 import { BRAND_PREFIX, BRAND_NAMES } from './enums/brands.ts';
 import { PROCESSING_CODE } from './enums/processingCode.ts';
+import { getIssuerConnection } from './tcpConnectionManager.ts';
 
 import type { Transaction } from './types.ts';
 
-const PORT = Number(process.env.ISSUER_PORT) || 9218;
-const HOST = process.env.HOST || 'localhost';
 const DEBUG = process.env.DEBUG === 'true';
-const TRANSACTION_TYPE = 'sale'; // Tipo de transação para testar: 'sale', 'auth', 'void', 'reversal', 'refund'
-const RESPONSE_CODE_APPROVED = '00'; // Código de resposta esperado (últimos 2 dígitos do valor)
+const TRANSACTION_TYPE = 'sale';
+const RESPONSE_CODE_APPROVED = '00';
+// const { CONNECTION_TIMEOUT_MS } = tcpConfig;
+
+let lastTask: Promise<unknown> = Promise.resolve();
+
+const awaitResponse = async (socket: Socket, buffer: Buffer): Promise<Buffer> => {
+  const abortController = new AbortController();
+  const { signal } = abortController;
+
+  const dataPromise = once(socket, 'data', { signal }).then(([data]) => data);
+
+  const errorPromise = once(socket, 'error', { signal }).then(([error]) => {
+    throw new Error(`Connection error: ${error.message}`);
+  });
+
+  const timeoutPromise = once(socket, 'timeout', { signal }).then(() => {
+    socket.destroy();
+    throw new Error('Connection timeout');
+  });
+
+  socket.write(buffer);
+
+  try {
+    return await Promise.race([dataPromise, errorPromise, timeoutPromise]);
+  } finally {
+    abortController.abort();
+    dataPromise.catch(() => {});
+    errorPromise.catch(() => {});
+    timeoutPromise.catch(() => {});
+  }
+};
+
+const processTransaction = async (transaction: Transaction): Promise<any> => {
+  //
+  // BRAND → Processing Code
+  //
+  if (transaction.cardNumber.startsWith(BRAND_PREFIX.PIX)) {
+    transaction.processingCode = PROCESSING_CODE.PIX;
+  } 
+  else if (
+    transaction.cardNumber.startsWith(BRAND_PREFIX.MASTERCARD) || 
+    transaction.cardNumber.startsWith(BRAND_PREFIX.VISA)
+  ) {
+    transaction.processingCode = PROCESSING_CODE.CARD;
+  }
+
+  const processingCodeName =
+    transaction.processingCode === PROCESSING_CODE.PIX ? "Pix" : "Card";
+
+  const prefix = transaction.cardNumber.slice(0, 4) as keyof typeof BRAND_NAMES;
+  const brandName = BRAND_NAMES[prefix] ?? 'Unknown';
+
+  if (!transaction.processingCode) {
+    return { 
+      success: false,
+      message: 'Brand not supported',
+      responseCode: '99',
+      processingCodeName,
+      brandName
+    };
+  }
+
+  const client = await getIssuerConnection();
+
+  //
+  // Transaction Builders from module ISO.Messages
+  //
+  const transactionHandlers: Record<string, (opts: Transaction) => Buffer> = {
+    sale: ISO.Messages.createPurchaseMessage,
+    // auth: ISO.Messages.createAuthMessage,
+    // void: (opts) => ISO.Messages.createVoidMessage({...}),
+    // reversal: ...
+  };
+
+  const transactionHandler = transactionHandlers[TRANSACTION_TYPE];
+
+  if (!transactionHandler) {
+    return { 
+      success: false,
+      message: 'Invalid transaction type',
+      processingCodeName,
+      brandName
+    };
+  }
+
+  //
+  // BUILD ISO8583 BUFFER
+  //
+  const buffer = transactionHandler(transaction);
+
+  if (DEBUG) {
+    console.log('='.repeat(60));
+    console.log(`💳 CREATING MESSAGE OF ${TRANSACTION_TYPE.toUpperCase()}`);
+    console.log('='.repeat(60));
+    console.log('\n📋 Customized transaction:');
+    console.log(`   Value: R$ ${ISO.Utils.amountToCurrency(transaction.amount)}`);
+    console.log(`   Transaction ID: ${transaction.transactionId}`);
+    console.log(`   Acquirer: ${transaction.acquirerInstitution}`);
+    console.log(`   Currency: BRL (${transaction.currency})`);
+    console.log(`   Card Number: ${transaction.cardNumber}`);
+    console.log(`   Processing Code: ${transaction.processingCode}`);
+    console.log(`   Brand Name: ${brandName}`);
+    
+    console.log(`\n📦 Buffer (${buffer.length} bytes)`);
+    console.log(`Hex: ${buffer.toString('hex')}\n`);
+    console.log('📤 Sending to simulator...\n');
+  }
+  
+  // client.setTimeout(CONNECTION_TIMEOUT_MS);
+  
+  const data = await awaitResponse(client, buffer);
+
+  if (DEBUG) {
+    console.log(`📦 Response received (${data.length} bytes)`);
+    console.log(`Hex: ${data.toString('hex')}\n`);
+  }
+
+  // Remove header (MLI + TPDU)
+  const isoPayload = data.subarray(7);
+
+  //
+  // Parse using namespace ISO.Parser
+  //
+  const parsed = ISO.Parser.parseIsoFromBuffer(isoPayload);
+  const responseCode: string = parsed['39'];
+
+  const isApproved = responseCode === RESPONSE_CODE_APPROVED;
+
+  const saleResponseCode = ISO.Enums.SALES_RESPONSE_CODES
+    .find(sale => sale.req === responseCode);
+
+  const description = saleResponseCode?.desc ?? 'Invalid processing code';
+
+  if (!isApproved) {
+    if (DEBUG) {
+      console.log(`❌ ${description}:`, responseCode)
+    }
+
+    return { 
+      success: false, 
+      responseCode, 
+      amount: transaction.amount,
+      message: description,
+      type: processingCodeName,
+      brandName
+    };
+  }
+
+  if (DEBUG) {
+    console.log(`✅ Approved:`, responseCode);
+  }
+
+  return { 
+    success: true, 
+    responseCode, 
+    amount: transaction.amount,
+    message: description, 
+    type: processingCodeName,
+    brandName 
+  };
+};
 
 async function acquirer(transaction: Transaction): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const client = new net.Socket();
-
-    // Validate and set processing code
-    if (transaction.cardNumber.startsWith(BRAND_PREFIX.PIX)) {
-      transaction.processingCode = PROCESSING_CODE.PIX;
-    } 
-    else if (
-      transaction.cardNumber.startsWith(BRAND_PREFIX.MASTERCARD) || 
-      transaction.cardNumber.startsWith(BRAND_PREFIX.VISA)
-    ) {
-      transaction.processingCode = PROCESSING_CODE.CARD;
-    } 
-
-    const processingCodeName = transaction.processingCode === PROCESSING_CODE.PIX ? "Pix" : "Card";
-    const prefix = transaction.cardNumber.slice(0, 4) as keyof typeof BRAND_NAMES;
-    const brandName = BRAND_NAMES[prefix] ?? 'Unknown';
-
-    // Connect simulator
-    client.connect(PORT, HOST, () => {
-      if (DEBUG) {
-        console.log(`Connected to simulator at ${HOST}:${PORT}`);
-        
-        console.log('='.repeat(60));
-        console.log(`💳 CREATING MESSAGE OF ${TRANSACTION_TYPE.toUpperCase()}`);
-        console.log('='.repeat(60));
-      }
-
-      if (!transaction.processingCode) {
-        client.destroy();
-        resolve({ 
-          success: false, 
-          message: 'Brand not supported',
-          responseCode: '99',
-          processingCodeName,
-          brandName
-        });
-        return;
-      }
-
-      const transactionHandlers: Record<string, (opts: Transaction) => Buffer> = {
-        sale: iso8583.createPurchaseMessage,
-        // auth: iso8583.createAuthMessage,
-        // reversal: (opts) => iso8583.createReversalMessage({ ...opts, originalTransactionId: '000001' }),
-        // void: (opts) => iso8583.createVoidMessage({ ...opts, originalTransactionId: '000001' }),
-      };
-
-      const transactionHandler = transactionHandlers[TRANSACTION_TYPE];
-      if (!transactionHandler) {
-        client.destroy();
-        resolve({ 
-          success: false, 
-          message: 'Invalid transaction type',
-          processingCodeName,
-          brandName
-        });
-        return;
-      }
-
-      const buffer = transactionHandler(transaction);
-
-      if (DEBUG) {
-        console.log('\n📋 Customized transaction:');
-        console.log(`   Value: R$ ${iso8583.amountToCurrency(transaction.amount)}`);
-        console.log(`   Transaction ID: ${transaction.transactionId}`);
-        console.log(`   Acquirer Institution: ${transaction.acquirerInstitution}`);
-        console.log(`   Currency: BRL (${transaction.currency})`);
-        console.log(`   Card Number: ${transaction.cardNumber}`);
-        console.log(`   Processing Code: ${transaction.processingCode}`);
-        console.log(`   Brand Name: ${brandName}`);
-        
-        console.log(`\n📦 Buffer (${buffer.length} bytes)`);
-        console.log(`Hex: ${buffer.toString('hex')}\n`);
-        
-        console.log('📤 Sending to simulator...\n');
-      }
-      
-      client.write(buffer);
-    });
-
-    // Received buffer data
-    client.on('data', (data: Buffer) => {
-      if (DEBUG) {
-        console.log(`📦 Response received (${data.length} bytes)`);
-        console.log(`Hex: ${data.toString('hex')}\n`);
-      }
-
-      const responseBufferWithoutHeader = data.subarray(7);
-      const parsedResponse = iso8583.parseIsoFromBuffer(responseBufferWithoutHeader);
-      const responseCode: string = parsedResponse['39'];
-
-      const isApproved = responseCode === RESPONSE_CODE_APPROVED;
-
-      const saleResponseCode = iso8583.enums.SALES_RESPONSE_CODES
-        .find(sale => sale.req === responseCode);
-
-      const description = saleResponseCode?.desc ?? 'Invalid processing code';
-
-      if (!isApproved) {
-        
-        if (DEBUG) {
-          console.log(`❌ ${description}:`, responseCode)
-          console.log(`❌ Processing Code Name: ${processingCodeName}`)
-          console.log(`❌ Brand Name: ${brandName}`)
-        }
-
-        resolve({ 
-          success: false, 
-          responseCode, 
-          amount: transaction.amount,
-          message: description,
-          type: processingCodeName,
-          brandName
-        });
-
-        return;
-      }
-      
-      client.destroy();
-
-      if (DEBUG) {
-        console.log(`✅ Success Transaction:`, responseCode);
-        console.log(`✅ Processing Code Name: ${processingCodeName}`);
-        console.log(`✅ Brand Name: ${brandName}`);
-      }
-
-      resolve({ 
-        success: true, 
-        responseCode, 
-        amount: transaction.amount,
-        message: description, 
-        type: processingCodeName,
-        brandName 
-      });
-    });
-
-    client.on('error', (error: Error) => {
-      reject(new Error(`Connection error: ${error.message}`));
-    });
-
-    client.on('timeout', () => {
-      client.destroy();
-      reject(new Error('Connection timeout'));
-    });
-
-    client.setTimeout(10000);
-  });
+  const run = lastTask.then(() => processTransaction(transaction));
+  lastTask = run.catch(() => {});
+  return run;
 }
 
 export default acquirer;

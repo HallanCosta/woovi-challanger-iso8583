@@ -10,7 +10,7 @@ import formats, { type ISO8583FieldFormat } from './formats.ts';
  * @param buffer - Buffer começando no bitmap
  * @returns { bits: Array, bitmapLength: number }
  */
-function decodeBitmap(buffer: Buffer): { bits: number[], bitmapLength: number } {
+export function decodeBitmap(buffer: Buffer): { bits: number[], bitmapLength: number } {
   const bits: number[] = [];
 
   // Verifica se há bitmap estendido (bit 1 setado)
@@ -40,7 +40,7 @@ function decodeBitmap(buffer: Buffer): { bits: number[], bitmapLength: number } 
  * @param fields - Array de números de campos presentes
  * @returns Buffer contendo o bitmap
  */
-function encodeBitmap(fields: number[]): Buffer {
+export function encodeBitmap(fields: number[]): Buffer {
   const maxField = Math.max(...fields);
   const bitmapLength = maxField > 64 ? 16 : 8;
   const bitmap = Buffer.alloc(bitmapLength);
@@ -70,7 +70,7 @@ function encodeBitmap(fields: number[]): Buffer {
  * @param fieldNum - Field number
  * @returns { value, newOffset, error? }
  */
-function _parseField(buffer: Buffer, offset: number, format: ISO8583FieldFormat, fieldNum: number): { value: string | null, newOffset: number, error?: any } {
+export function _parseField(buffer: Buffer, offset: number, format: ISO8583FieldFormat, fieldNum: number): { value: string | null, newOffset: number, error?: any } {
   let value = '';
   let newOffset = offset;
 
@@ -141,7 +141,7 @@ function _parseField(buffer: Buffer, offset: number, format: ISO8583FieldFormat,
  * @param buffer - The ISO8583 message buffer (without length header)
  * @returns Parsed fields
  */
-function parseIsoFromBuffer(buffer: Buffer): Record<string, any> {
+export function parseIsoFromBuffer(buffer: Buffer): Record<string, any> {
   let offset = 0;
   const parsedFields: Record<string, any> = {};
 
@@ -187,7 +187,7 @@ function parseIsoFromBuffer(buffer: Buffer): Record<string, any> {
  * @param fields - Parsed fields
  * @returns JSON string
  */
-function parseJson(fields: Record<string, any>): string {
+export function parseJson(fields: Record<string, any>): string {
   return JSON.stringify(fields, null, 2);
 }
 
@@ -196,7 +196,7 @@ function parseJson(fields: Record<string, any>): string {
  * @param fields - Parsed fields
  * @returns XML string
  */
-function parseXML(fields: Record<string, any>): string {
+export function parseXML(fields: Record<string, any>): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<Iso8583PostXml>\n';
   xml += `  <MsgType>${fields['0'] || ''}</MsgType>\n`;
@@ -211,13 +211,3 @@ function parseXML(fields: Record<string, any>): string {
   xml += '</Iso8583PostXml>\n';
   return xml;
 }
-
-const parser = {
-  parseIsoFromBuffer,
-  parseJson,
-  parseXML,
-  decodeBitmap,
-  encodeBitmap
-};
-
-export default parser;

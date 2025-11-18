@@ -16,7 +16,7 @@ import { strToBCD } from './utils.ts';
 // }
 
 // Build de message default ISO8583
-function buildIso8583Message(options: Transaction, customFields: any = {}): Buffer {
+export function buildIso8583Message(options: Transaction, customFields: any = {}): Buffer {
   const now = new Date();
   const pad = (num: number) => String(num).padStart(2, '0');
   const month = pad(now.getMonth() + 1);
@@ -64,17 +64,17 @@ function buildIso8583Message(options: Transaction, customFields: any = {}): Buff
 
 
 // Create message sale on format simulator
-function createPurchaseMessage(options: Transaction): Buffer {
+export function createPurchaseMessage(options: Transaction): Buffer {
   return buildIso8583Message(options, { mti: '0200', processingCode: '000000' });
 }
 
 // Create message sale on format simulator
-function createAuthMessage(options: Transaction): Buffer {
+export function createAuthMessage(options: Transaction): Buffer {
   return buildIso8583Message(options, { mti: '0100', processingCode: '000000' });
 }
 
 // Create message void on format simulator
-function createVoidMessage(options: Transaction): Buffer {
+export function createVoidMessage(options: Transaction): Buffer {
   const originalTransactionId = '000001'
   // DE37: Retrieval reference number (12 chars ASCII)
   const de37 = Buffer.from(originalTransactionId.padEnd(12, ' '), 'ascii');
@@ -87,7 +87,7 @@ function createVoidMessage(options: Transaction): Buffer {
 }
 
 // Create message reversal on format simulator
-function createReversalMessage(options: Transaction): Buffer {
+export function createReversalMessage(options: Transaction): Buffer {
   const originalTransactionId = '000001'
   // DE37: Retrieval reference number (12 chars ASCII)
   const de37 = Buffer.from(originalTransactionId.padEnd(12, ' '), 'ascii');
@@ -98,12 +98,3 @@ function createReversalMessage(options: Transaction): Buffer {
     extraBuffers: [de37]
   });
 }
-
-const messages = {
-  createPurchaseMessage,
-  createAuthMessage,
-  createVoidMessage,
-  createReversalMessage
-};
-
-export default messages;
