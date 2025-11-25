@@ -1,0 +1,87 @@
+const HALLAN_MASTERCARD_MAP = {
+  '5162000000000000': '00',
+  '5162123400000000': '00',
+  '5162555500000000': '00',
+  '5162999900000000': '00',
+  '5162333300000000': '00',
+  '5162777700000000': '00',
+  '5162111100000000': '00',
+  '5162222200000000': '00',
+  '5162999999999999': '00',
+  '5162000000000003': '03',
+  '5162000000000012': '12',
+  '5162000000000014': '14',
+  '5162000000000051': '51',
+  '5162000000000057': '57',
+  '5162000000000058': '00',
+  '5162000000000091': '91',
+  '5162000000000094': '94',
+  '5162000000000095': '95',
+} as const;
+
+export const HALLAN_MASTERCARD_CARDS = HALLAN_MASTERCARD_MAP;
+export const HALLAN_MASTERCARD_NUMBERS = Object.keys(HALLAN_MASTERCARD_MAP) as readonly string[];
+export const TEST_FAIL = Object.fromEntries(
+  Object.entries(HALLAN_MASTERCARD_MAP).filter(([, rc]) => rc !== '00')
+) as Record<string, string>;
+
+export const HALLAN_VISA_CARDS = [
+  '4026000000000000',
+  '4761739001010119',
+] as const;
+
+export const HALLAN_PIX_CARDS = [
+  '3907000000000000',
+] as const;
+
+const WOOVI_MASTERCARD_MAP = {
+  '2306000000000000': '00',
+  '2306123400000000': '00',
+  '2306444400000000': '00',
+  '2306777700000000': '00',
+  '2306888800000000': '00',
+} as const;
+
+export const WOOVI_MASTERCARD_CARDS = WOOVI_MASTERCARD_MAP;
+export const WOOVI_MASTERCARD_NUMBERS = Object.keys(WOOVI_MASTERCARD_MAP) as readonly string[];
+
+export const WOOVI_VISA_CARDS = [
+  '4815000000000000',
+  '4815999900000000',
+] as const;
+
+export const WOOVI_PIX_CARDS = [
+  '3910000000000000',
+] as const;
+
+export const CARD_LIST_HALLAN = {
+  mastercard: HALLAN_MASTERCARD_NUMBERS,
+  visa: HALLAN_VISA_CARDS,
+  pix: HALLAN_PIX_CARDS,
+} as const;
+
+export const CARD_LIST_WOOVI = {
+  mastercard: WOOVI_MASTERCARD_CARDS,
+  visa: WOOVI_VISA_CARDS,
+  pix: WOOVI_PIX_CARDS,
+} as const;
+
+export const BANK_CARD_LIST = {
+  hallan: CARD_LIST_HALLAN,
+  woovi: CARD_LIST_WOOVI,
+} as const;
+
+export const HALLAN_BIN_PREFIXES = ['5162', '4026', '3907'] as const;
+export const WOOVI_BIN_PREFIXES = ['2306', '4815', '3910'] as const;
+
+export const HALLAN_PREFIX_TO_LIST = {
+  '5162': HALLAN_MASTERCARD_NUMBERS,
+  '4026': HALLAN_VISA_CARDS,
+  '3907': HALLAN_PIX_CARDS,
+} as const;
+
+export const WOOVI_PREFIX_TO_LIST = {
+  '2306': WOOVI_MASTERCARD_CARDS,
+  '4815': WOOVI_VISA_CARDS,
+  '3910': WOOVI_PIX_CARDS,
+} as const;

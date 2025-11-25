@@ -1,82 +1,98 @@
-import { once } from "node:events";
-import { connect, Socket } from "node:net";
+import { once } from 'node:events';
+import { connect, Socket } from 'node:net';
 
-const PORT = Number(process.env.ISSUER_PORT) || 9218;
-const HOST = process.env.HOST || "localhost";
 const CONNECTION_TIMEOUT_MS = 10000;
 const RECONNECT_DELAY_MS = 1000;
 
-let socket: Socket | null = null;
-let connectInProgress: Promise<Socket> | null = null;
-let retryConnection: boolean = true
+type ConnectionManager = {
+  getConnection: () => Promise<Socket>;
+  closeConnection: () => Promise<void>;
+};
 
-const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-export const establishConnectionIssuer = async (): Promise<Socket> => {
-  while (true) {
-    const s = connect({ host: HOST, port: PORT });
-    s.setTimeout(CONNECTION_TIMEOUT_MS);
+const createConnectionManager = (label: string, host: string, port: number): ConnectionManager => {
+  let socket: Socket | null = null;
+  let connectInProgress: Promise<Socket> | null = null;
+  let retryConnection = true;
 
-    try {
-      await Promise.race([
-        once(s, "connect"),
-        once(s, "error").then(([err]) => {
-          throw new Error(`TCP connection error: ${err.message}`);
-        }),
-      ]);
+  const establishConnection = async (): Promise<Socket> => {
+    while (true) {
+      const s = connect({ host, port });
+      s.setTimeout(CONNECTION_TIMEOUT_MS);
 
-      console.log(`[TCP] Connected to issuer at ${HOST}:${PORT}`);
+      try {
+        await Promise.race([
+          once(s, 'connect'),
+          once(s, 'error').then(([err]) => {
+            throw new Error(`TCP connection error: ${err.message}`);
+          }),
+        ]);
 
-      socket = s;
+        console.log(`[TCP][${label}] Connected to issuer at ${host}:${port}`);
 
-      s.on("close", () => {
-        socket = null;
-        connectInProgress = null
+        socket = s;
 
-        if (!retryConnection) {
-          console.warn("[TCP] Issuer connection lost.");
-          retryConnection = true
-          return;
-        }
+        s.on('close', () => {
+          socket = null;
+          connectInProgress = null;
 
-        console.warn("[TCP] Issuer connection lost. Reconnecting...");
-        connectInProgress = establishConnectionIssuer();
-      });
+          if (!retryConnection) {
+            console.warn(`[TCP][${label}] Issuer connection closed.`);
+            retryConnection = true;
+            return;
+          }
 
-      s.on("error", (err) => {
-        console.warn(`[TCP] Socket error: ${err.message}`);
-      });
+          console.warn(`[TCP][${label}] Issuer connection lost. Reconnecting...`);
+          connectInProgress = establishConnection();
+        });
 
-      return s;
+        s.on('error', (err) => {
+          console.warn(`[TCP][${label}] Socket error: ${err.message}`);
+        });
 
-    } catch (err) {
-      s.destroy();
-      console.warn(
-        `[TCP] Failed to connect to issuer. Retrying in ${RECONNECT_DELAY_MS}ms`
-      );
-      await sleep(RECONNECT_DELAY_MS);
+        return s;
+      } catch (err) {
+        s.destroy();
+        console.warn(
+          `[TCP][${label}] Failed to connect to issuer. Retrying in ${RECONNECT_DELAY_MS}ms`
+        );
+        await sleep(RECONNECT_DELAY_MS);
+      }
     }
-  }
-}
+  };
 
-export const getIssuerConnection = async (): Promise<Socket> => {
-  if (socket && !socket.destroyed) {
-    return socket;
-  }
+  const getConnection = async (): Promise<Socket> => {
+    if (socket && !socket.destroyed) {
+      return socket;
+    }
 
-  if (!connectInProgress) {
-    connectInProgress = establishConnectionIssuer();
-  }
+    if (!connectInProgress) {
+      connectInProgress = establishConnection();
+    }
 
-  return connectInProgress;
-}
+    return connectInProgress;
+  };
 
-export const closeIssuerConnection = async (): Promise<void> => {
-  if (socket && !socket.destroyed) {
-    socket.destroy();
-  }
-  
-  socket = null;
-  connectInProgress = null;
-  retryConnection = false
-}
+  const closeConnection = async (): Promise<void> => {
+    retryConnection = false;
+
+    if (socket && !socket.destroyed) {
+      socket.destroy();
+    }
+
+    socket = null;
+    connectInProgress = null;
+  };
+
+  return { getConnection, closeConnection };
+};
+
+const HALLAN_PORT = Number(process.env.ISSUER_PORT) || 9218;
+const HALLAN_HOST = process.env.HOST || 'localhost';
+
+const hallanManager = createConnectionManager('HALLAN', HALLAN_HOST, HALLAN_PORT);
+
+export const establishConnectionIssuer = hallanManager.getConnection;
+export const getIssuerConnection = hallanManager.getConnection;
+export const closeIssuerConnection = hallanManager.closeConnection;

@@ -1,30 +1,39 @@
-/**
- * ISO8583 Parser Functions
- */
-
 import { bcdToStr } from './utils.ts';
 import formats, { type ISO8583FieldFormat } from './formats.ts';
+import { parseField } from './parserHelpers.ts';
 
-/**
- * Decodifica bitmap ISO8583
- * @param buffer - Buffer começando no bitmap
- * @returns { bits: Array, bitmapLength: number }
- */
-export function decodeBitmap(buffer: Buffer): { bits: number[], bitmapLength: number } {
-  const bits: number[] = [];
+export type ParsedIsoField = {
+  field: number;
+  value: string;
+  raw: Buffer;
+  length: number;
+  startOffset: number;
+  endOffset: number;
+};
 
-  // Verifica se há bitmap estendido (bit 1 setado)
+export type ParsedIsoMessage = {
+  mti: string;
+  bitmap: Buffer;
+  bits: number[];
+  fields: Map<number, ParsedIsoField>;
+  lastOffset: number;
+};
+
+// ---------------------------------------------------------------------------
+// Bitmap helpers
+// ---------------------------------------------------------------------------
+
+export function decodeBitmap(buffer: Buffer): { bits: number[]; bitmapLength: number } {
   const hasExtendedBitmap = (buffer[0] & 0x80) !== 0;
   const bitmapLength = hasExtendedBitmap ? 16 : 8;
+  const bits: number[] = [];
 
   for (let byteIndex = 0; byteIndex < bitmapLength; byteIndex++) {
     const byte = buffer[byteIndex];
 
     for (let bitIndex = 7; bitIndex >= 0; bitIndex--) {
-      const bitNumber = (byteIndex * 8) + (7 - bitIndex) + 1;
-
-      // Pula o bit 1 se estiver no primeiro byte (indica bitmap estendido)
-      if (bitNumber === 1) continue;
+      const bitNumber = byteIndex * 8 + (7 - bitIndex) + 1;
+      if (bitNumber === 1) continue; // Bit 1 indica bitmap estendido
 
       if (byte & (1 << bitIndex)) {
         bits.push(bitNumber);
@@ -35,167 +44,85 @@ export function decodeBitmap(buffer: Buffer): { bits: number[], bitmapLength: nu
   return { bits, bitmapLength };
 }
 
-/**
- * Cria bitmap a partir de array de campos
- * @param fields - Array de números de campos presentes
- * @returns Buffer contendo o bitmap
- */
 export function encodeBitmap(fields: number[]): Buffer {
   const maxField = Math.max(...fields);
   const bitmapLength = maxField > 64 ? 16 : 8;
   const bitmap = Buffer.alloc(bitmapLength);
 
-  // Se tiver campos > 64, seta o bit 1 (bitmap estendido)
   if (maxField > 64) {
     bitmap[0] |= 0x80;
   }
 
-  fields.forEach(fieldNum => {
-    if (fieldNum === 1) return; // Pula campo 1 (bitmap)
+  for (const fieldNum of fields) {
+    if (fieldNum === 1) continue;
 
     const byteIndex = Math.floor((fieldNum - 1) / 8);
     const bitIndex = 7 - ((fieldNum - 1) % 8);
-
-    bitmap[byteIndex] |= (1 << bitIndex);
-  });
+    bitmap[byteIndex] |= 1 << bitIndex;
+  }
 
   return bitmap;
 }
 
-/**
- * Helper function to parse a field
- * @param buffer - Buffer
- * @param offset - Current offset
- * @param format - Field format
- * @param fieldNum - Field number
- * @returns { value, newOffset, error? }
- */
-export function _parseField(buffer: Buffer, offset: number, format: ISO8583FieldFormat, fieldNum: number): { value: string | null, newOffset: number, error?: any } {
-  let value = '';
-  let newOffset = offset;
+// ---------------------------------------------------------------------------
+// Message parsing
+// ---------------------------------------------------------------------------
 
-  try {
-    const lenType = format.LenType;
-    const contentType = format.ContentType;
-    const maxLen = format.MaxLen;
+export function parseIsoMessage(buffer: Buffer): ParsedIsoMessage {
+  let offset = 0;
+  const mti = bcdToStr(buffer.subarray(offset, offset + 2), 4);
+  offset += 2;
 
-    if (lenType === 'fixed') {
-    if (contentType === 'n' && format.Format === 'BCD') {
-    // BCD numeric
-    const bytesNeeded = Math.ceil(maxLen / 2);
-    value = bcdToStr(buffer.subarray(offset, offset + bytesNeeded), maxLen);
-      newOffset += bytesNeeded;
-    } else if (contentType === 'n' || contentType === 'a' || contentType === 'an') {
-    // Numeric, alpha, or alphanumeric fixed as ASCII
-    value = buffer.toString('ascii', offset, offset + maxLen);
-      newOffset += maxLen;
-      } else {
-        // Default binary as hex
-        value = buffer.toString('hex', offset, offset + maxLen);
-        newOffset += maxLen;
-      }
-    } else if (lenType === 'llvar') {
-      // Variable length, length field 2 digits BCD
-      const lengthDigits = 2;
-      const lenBytes = Math.ceil(lengthDigits / 2);
-      const fieldLen = parseInt(bcdToStr(buffer.subarray(offset, offset + lenBytes), lengthDigits), 10);
-      offset += lenBytes;
-      if (contentType === 'n' || contentType === 'a' || contentType === 'an' || contentType === 'ans') {
-        // Assume ASCII for variable
-        value = buffer.toString('ascii', offset, offset + fieldLen);
-        newOffset = offset + fieldLen;
-      } else {
-        // Default binary as hex
-        value = buffer.toString('hex', offset, offset + fieldLen);
-        newOffset = offset + fieldLen;
-      }
-    } else if (lenType === 'lllvar') {
-      // Variable length, length field 3 digits BCD
-      const lengthDigits = 3;
-      const lenBytes = Math.ceil(lengthDigits / 2);
-      const fieldLen = parseInt(bcdToStr(buffer.subarray(offset, offset + lenBytes), lengthDigits), 10);
-      offset += lenBytes;
-      if (contentType === 'n' || contentType === 'a' || contentType === 'an' || contentType === 'ans') {
-        // Assume ASCII for variable
-        value = buffer.toString('ascii', offset, offset + fieldLen);
-        newOffset = offset + fieldLen;
-      } else {
-        // Default binary as hex
-        value = buffer.toString('hex', offset, offset + fieldLen);
-        newOffset = offset + fieldLen;
-      }
-    } else {
-      // Unknown
-      value = '';
-      newOffset = offset;
+  const { bits, bitmapLength } = decodeBitmap(buffer.subarray(offset));
+  const bitmap = buffer.subarray(offset, offset + bitmapLength);
+  offset += bitmapLength;
+
+  const fields: Map<number, ParsedIsoField> = new Map();
+
+  for (const fieldNum of bits) {
+    const format = formats[fieldNum.toString()];
+
+    if (!format) {
+      console.warn(`Campo ${fieldNum} não definido em formats`);
+      continue;
     }
-  } catch (error) {
-    return { value: null, newOffset, error };
+
+    const parsed = parseField(buffer, offset, format);
+
+    fields.set(fieldNum, {
+      field: fieldNum,
+      value: parsed.value,
+      raw: parsed.raw,
+      length: parsed.raw.length,
+      startOffset: offset,
+      endOffset: parsed.newOffset,
+    });
+
+    offset = parsed.newOffset;
   }
 
-  return { value, newOffset };
+  return { mti, bitmap, bits, fields, lastOffset: offset };
 }
 
-/**
- * Parse ISO8583 message from buffer
- * @param buffer - The ISO8583 message buffer (without length header)
- * @returns Parsed fields
- */
 export function parseIsoFromBuffer(buffer: Buffer): Record<string, any> {
-  let offset = 0;
-  const parsedFields: Record<string, any> = {};
-
   try {
-    // 1. Parse MTI (4 dígitos = 2 bytes BCD)
-    const mti = bcdToStr(buffer.subarray(offset, offset + 2), 4);
-    parsedFields['0'] = mti;
-    offset += 2;
+    const parsed = parseIsoMessage(buffer);
+    const result: Record<string, any> = { '0': parsed.mti };
 
-    // 2. Parse Bitmap
-    const { bits, bitmapLength } = decodeBitmap(buffer.subarray(offset));
-    offset += bitmapLength;
-
-    // 3. Parse cada campo presente no bitmap
-    for (const fieldNum of bits) {
-      const format = formats[fieldNum.toString()];
-
-      if (!format) {
-        console.warn(`Campo ${fieldNum} não definido em formats`);
-        continue;
-      }
-
-      const fieldData = _parseField(buffer, offset, format, fieldNum);
-
-      if (fieldData.error) {
-        console.error(`Erro parsing campo ${fieldNum}:`, fieldData.error);
-        break;
-      }
-
-      parsedFields[fieldNum] = fieldData.value;
-      offset = fieldData.newOffset;
+    for (const { field, value } of parsed.fields.values()) {
+      result[field] = value;
     }
 
-    return parsedFields;
-
+    return result;
   } catch (error: any) {
     return { error: `Failed to parse: ${error.message}` };
   }
 }
 
-/**
- * Parse ISO8583 fields to JSON string
- * @param fields - Parsed fields
- * @returns JSON string
- */
 export function parseJson(fields: Record<string, any>): string {
   return JSON.stringify(fields, null, 2);
 }
 
-/**
- * Parse ISO8583 fields to XML string
- * @param fields - Parsed fields
- * @returns XML string
- */
 export function parseXML(fields: Record<string, any>): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<Iso8583PostXml>\n';

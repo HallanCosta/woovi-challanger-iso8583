@@ -8,11 +8,16 @@
 import { once } from 'node:events';
 import { Socket } from 'node:net';
 
-import ISO from './lib/iso8583/index.ts';
-import { BRAND_PREFIX, BRAND_NAMES } from './enums/brands.ts';
+import { createPurchaseMessage } from './logic/messageFactory.ts';
+import { amountToCurrency } from './lib/iso8583/utils.ts';
+import { parseIsoFromBuffer } from './lib/iso8583/parser.ts';
+import { SALES_RESPONSE_CODES } from './lib/iso8583/enums/response.ts';
+import { BRAND_PREFIX_ALL, BRAND_NAMES } from './enums/brands.ts';
 import { PROCESSING_CODE } from './enums/processingCode.ts';
-import { getIssuerConnection } from './tcpConnectionManager.ts';
+import { routeTransaction } from './routingService.ts';
+import { isIssuerNotFoundError } from './errors.ts';
 
+import type { ConnectorResult } from './connectors/types.ts';
 import type { Transaction } from './types.ts';
 
 const DEBUG = process.env.DEBUG === 'true';
@@ -49,45 +54,96 @@ const awaitResponse = async (socket: Socket, buffer: Buffer): Promise<Buffer> =>
   }
 };
 
+const matchesPrefix = (cardNumber: string, prefixes: readonly string[]): boolean =>
+  prefixes.some((prefix) => cardNumber.startsWith(prefix));
+
+const findBrandName = (cardNumber: string): string => {
+  const match = Object.keys(BRAND_NAMES).find((prefix) => cardNumber.startsWith(prefix));
+  return match ? BRAND_NAMES[match as keyof typeof BRAND_NAMES] : 'Unknown';
+};
+
 const processTransaction = async (transaction: Transaction): Promise<any> => {
   //
   // BRAND → Processing Code
   //
-  if (transaction.cardNumber.startsWith(BRAND_PREFIX.PIX)) {
+  if (matchesPrefix(transaction.cardNumber, BRAND_PREFIX_ALL.PIX)) {
     transaction.processingCode = PROCESSING_CODE.PIX;
-  } 
-  else if (
-    transaction.cardNumber.startsWith(BRAND_PREFIX.MASTERCARD) || 
-    transaction.cardNumber.startsWith(BRAND_PREFIX.VISA)
+  } else if (
+    matchesPrefix(transaction.cardNumber, BRAND_PREFIX_ALL.MASTERCARD) ||
+    matchesPrefix(transaction.cardNumber, BRAND_PREFIX_ALL.VISA)
   ) {
     transaction.processingCode = PROCESSING_CODE.CARD;
   }
 
   const processingCodeName =
-    transaction.processingCode === PROCESSING_CODE.PIX ? "Pix" : "Card";
+    transaction.processingCode === PROCESSING_CODE.PIX
+      ? 'Pix'
+      : transaction.processingCode === PROCESSING_CODE.CARD
+        ? 'Card'
+        : 'Unknown';
 
-  const prefix = transaction.cardNumber.slice(0, 4) as keyof typeof BRAND_NAMES;
-  const brandName = BRAND_NAMES[prefix] ?? 'Unknown';
+  const brandName = findBrandName(transaction.cardNumber);
 
   if (!transaction.processingCode) {
     return { 
       success: false,
-      message: 'Brand not supported',
-      responseCode: '99',
+      message: 'Issuer not found for this BIN',
+      responseCode: '15',
       processingCodeName,
-      brandName
+      type: processingCodeName,
+      brandName,
     };
   }
 
-  const client = await getIssuerConnection();
+  let connector: ConnectorResult;
+  let connectorName = '';
+
+  try {
+    connector = await routeTransaction(transaction);
+  } catch (error) {
+    if (isIssuerNotFoundError(error)) {
+      return {
+        success: false,
+        responseCode: error.responseCode,
+        amount: transaction.amount,
+        message: error.message,
+        processingCodeName,
+        type: processingCodeName,
+        brandName,
+      };
+    }
+
+    throw error;
+  }
+
+  if ('noop' in connector && connector.noop) {
+    const message =
+      connector.message ||
+      `Routing PAN ${transaction.cardNumber} to ${connector.bank} bank is handled outside the simulator`;
+
+    console.log(`[ROUTING][NO-OP] ${message}`);
+
+    return {
+      success: false,
+      responseCode: '91',
+      amount: transaction.amount,
+      message,
+      type: processingCodeName,
+      brandName,
+      routedTo: connector.bank,
+    };
+  }
+
+  const { socket: client, name } = connector;
+  connectorName = name;
 
   //
-  // Transaction Builders from module ISO.Messages
+  // Transaction Builders
   //
   const transactionHandlers: Record<string, (opts: Transaction) => Buffer> = {
-    sale: ISO.Messages.createPurchaseMessage,
-    // auth: ISO.Messages.createAuthMessage,
-    // void: (opts) => ISO.Messages.createVoidMessage({...}),
+    sale: createPurchaseMessage,
+    // auth: createAuthMessage,
+    // void: (opts) => createVoidMessage({...}),
     // reversal: ...
   };
 
@@ -112,13 +168,14 @@ const processTransaction = async (transaction: Transaction): Promise<any> => {
     console.log(`💳 CREATING MESSAGE OF ${TRANSACTION_TYPE.toUpperCase()}`);
     console.log('='.repeat(60));
     console.log('\n📋 Customized transaction:');
-    console.log(`   Value: R$ ${ISO.Utils.amountToCurrency(transaction.amount)}`);
+    console.log(`   Value: R$ ${amountToCurrency(transaction.amount)}`);
     console.log(`   Transaction ID: ${transaction.transactionId}`);
     console.log(`   Acquirer: ${transaction.acquirerInstitution}`);
     console.log(`   Currency: BRL (${transaction.currency})`);
     console.log(`   Card Number: ${transaction.cardNumber}`);
     console.log(`   Processing Code: ${transaction.processingCode}`);
     console.log(`   Brand Name: ${brandName}`);
+    console.log(`   Connector: ${connectorName}`);
     
     console.log(`\n📦 Buffer (${buffer.length} bytes)`);
     console.log(`Hex: ${buffer.toString('hex')}\n`);
@@ -138,14 +195,14 @@ const processTransaction = async (transaction: Transaction): Promise<any> => {
   const isoPayload = data.subarray(7);
 
   //
-  // Parse using namespace ISO.Parser
+  // Parse response buffer
   //
-  const parsed = ISO.Parser.parseIsoFromBuffer(isoPayload);
+  const parsed = parseIsoFromBuffer(isoPayload);
   const responseCode: string = parsed['39'];
 
   const isApproved = responseCode === RESPONSE_CODE_APPROVED;
 
-  const saleResponseCode = ISO.Enums.SALES_RESPONSE_CODES
+  const saleResponseCode = SALES_RESPONSE_CODES
     .find(sale => sale.req === responseCode);
 
   const description = saleResponseCode?.desc ?? 'Invalid processing code';

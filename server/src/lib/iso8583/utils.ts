@@ -1,63 +1,59 @@
-/**
- * utils to workings with BCD (Binary Coded Decimal) or ASCII (American Standard Code for Information Interchange)
- */
-
 import formats from './formats.ts';
+
+const pad = (value: string | number, size: number): string =>
+  String(value).padStart(size, '0');
+
+// ---------------------------------------------------------------------------
+// BCD helpers
+// ---------------------------------------------------------------------------
 
 function bcdToStr(buffer: Buffer, length: number): string {
   let result = '';
-  const bytesNeeded = Math.ceil(length / 2);
+  const bytes = Math.ceil(length / 2);
 
-  for (let i = 0; i < bytesNeeded; i++) {
+  for (let i = 0; i < bytes; i++) {
     const byte = buffer[i];
-    const high = (byte >> 4) & 0x0F;
-    const low = byte & 0x0F;
-
-    result += high.toString();
+    result += ((byte >> 4) & 0x0f).toString();
     if (result.length < length) {
-      result += low.toString();
+      result += (byte & 0x0f).toString();
     }
   }
 
-  return result.substring(0, length);
+  return result.slice(0, length);
 }
 
 function strToBCD(str: string, bytes: number): Buffer {
   const buffer = Buffer.alloc(bytes);
+
   for (let i = 0; i < bytes; i++) {
-      const pos = i * 2;
-      const highNibble = parseInt(str[pos] || '0', 10);
-      const lowNibble = parseInt(str[pos + 1] || '0', 10);
-      buffer[i] = (highNibble << 4) | lowNibble;
+    const pos = i * 2;
+    const high = parseInt(str[pos] ?? '0', 16);
+    const low = parseInt(str[pos + 1] ?? '0', 16);
+    buffer[i] = (high << 4) | low;
   }
+
   return buffer;
 }
 
 function llvarBCD(str: string): Buffer {
-  const len = str.length.toString().padStart(2, '0'); // 2 dígitos
-  return Buffer.concat([
-    strToBCD(len, 1),
-    strToBCD(str, Math.ceil(str.length / 2))
-  ]);
+  const len = pad(str.length, 2);
+  return Buffer.concat([strToBCD(len, 1), strToBCD(str, Math.ceil(str.length / 2))]);
 }
 
 function llvarASCII(str: string): Buffer {
-  const len = str.length.toString().padStart(2, '0');
-  return Buffer.concat([
-    strToBCD(len, 1),
-    Buffer.from(str, 'ascii')
-  ]);
+  const len = pad(str.length, 2);
+  return Buffer.concat([strToBCD(len, 1), Buffer.from(str, 'ascii')]);
 }
+
+// ---------------------------------------------------------------------------
+// Helpers for logging/formatting
+// ---------------------------------------------------------------------------
 
 function amountToCurrency(value: string): string {
-  const cents = parseInt(value, 10)
-  return (cents / 100).toFixed(2)
+  const cents = parseInt(value, 10);
+  return (cents / 100).toFixed(2);
 }
 
-/**
- * Describe os feidls parsed of message ISO8583
- * @param parsedFields - Fields parsed
- */
 function describeFields(parsedFields: Record<string, any>): void {
   console.log('\n📋 DESCRIÇÃO DOS CAMPOS DA RESPOSTA:\n');
 
@@ -70,14 +66,3 @@ function describeFields(parsedFields: Record<string, any>): void {
 }
 
 export { bcdToStr, strToBCD, llvarBCD, llvarASCII, describeFields, amountToCurrency };
-
-const utils = {
-  bcdToStr,
-  strToBCD,
-  llvarBCD,
-  llvarASCII,
-  describeFields,
-  amountToCurrency
-};
-
-export default utils;
