@@ -1,4 +1,4 @@
-import { SALES_RESPONSE_CODES } from '../lib/iso8583/enums/response.ts';
+import { SALES_RESPONSE_CODES } from '../../../lib/iso8583/enums/response.ts';
 import type { LogicResponse } from './types.ts';
 
 const VALID_VOID_PROCESSING_CODES = new Set(['020000', '220000']);

@@ -1,4 +1,4 @@
-import { SALES_RESPONSE_CODES } from '../lib/iso8583/enums/response.ts';
+import { SALES_RESPONSE_CODES } from '../../../lib/iso8583/enums/response.ts';
 import type { LogicResponse } from './types.ts';
 
 const APPROVED_RESPONSE = '00';

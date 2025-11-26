@@ -1,9 +1,9 @@
 import { createServer, Socket } from 'node:net';
 
 import { HALLAN_MASTERCARD_CARDS } from './data/cardListBanks.ts';
-import formats from './lib/iso8583/formats.ts';
-import { encodeBitmap, parseIsoMessage, type ParsedIsoMessage, type ParsedIsoField } from './lib/iso8583/parser.ts';
-import { strToBCD } from './lib/iso8583/utils.ts';
+import formats from '../../lib/iso8583/formats.ts';
+import { encodeBitmap, parseIsoMessage, type ParsedIsoMessage, type ParsedIsoField } from '../../lib/iso8583/parser.ts';
+import { strToBCD } from '../../lib/iso8583/utils.ts';
 import { resolveDelegate } from './logic/delegate.ts';
 
 const DEFAULT_PORT = 9218;

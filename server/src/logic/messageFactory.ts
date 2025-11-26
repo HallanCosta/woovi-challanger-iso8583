@@ -1,6 +1,6 @@
 import type { Transaction } from '../types.ts';
-import { buildIso8583Message, type IsoField } from '../lib/iso8583/messages.ts';
-import { llvarASCII, strToBCD } from '../lib/iso8583/utils.ts';
+import { buildIso8583Message, type IsoField } from '../../../lib/iso8583/messages.ts';
+import { llvarASCII, strToBCD } from '../../../lib/iso8583/utils.ts';
 
 type BaseBuildParams = {
   transaction: Transaction;

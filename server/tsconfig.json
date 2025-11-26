@@ -4,7 +4,7 @@
     "module": "commonjs",
     "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "..",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -18,9 +18,10 @@
     "allowImportingTsExtensions": true,
     "composite": true,
     "noEmit": true,
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals"],
+    "rootDirs": ["./src", "../lib"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../lib/iso8583/**/*"],
   "exclude": [
     "node_modules",
     "dist",

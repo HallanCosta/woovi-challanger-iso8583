@@ -9,9 +9,9 @@ import { once } from 'node:events';
 import { Socket } from 'node:net';
 
 import { createPurchaseMessage } from './logic/messageFactory.ts';
-import { amountToCurrency } from './lib/iso8583/utils.ts';
-import { parseIsoFromBuffer } from './lib/iso8583/parser.ts';
-import { SALES_RESPONSE_CODES } from './lib/iso8583/enums/response.ts';
+import { amountToCurrency } from '../../lib/iso8583/utils.ts';
+import { parseIsoFromBuffer } from '../../lib/iso8583/parser.ts';
+import { SALES_RESPONSE_CODES } from '../../lib/iso8583/enums/response.ts';
 import { BRAND_PREFIX_ALL, BRAND_NAMES } from './enums/brands.ts';
 import { PROCESSING_CODE } from './enums/processingCode.ts';
 import { routeTransaction } from './routingService.ts';
