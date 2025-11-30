@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./dist",
+    "rootDir": "..",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "allowImportingTsExtensions": true,
+    "composite": true,
+    "noEmit": true,
+    "types": ["node", "vitest/globals"],
+    "rootDirs": ["./src", "../lib", "../issuer-server/data"]
+  },
+  "include": ["src/**/*", "../lib/iso8583/**/*", "../issuer-server/data/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "vitest.config.ts",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}

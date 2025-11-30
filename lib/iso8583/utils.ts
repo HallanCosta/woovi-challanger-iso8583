@@ -1,4 +1,4 @@
-import formats from './formats.ts';
+import ISO8583_FIELD_FORMATS from './formats.ts';
 
 const pad = (value: string | number, size: number): string =>
   String(value).padStart(size, '0');
@@ -58,7 +58,7 @@ function describeFields(parsedFields: Record<string, any>): void {
   console.log('\n📋 DESCRIÇÃO DOS CAMPOS DA RESPOSTA:\n');
 
   for (const [fieldNum, value] of Object.entries(parsedFields)) {
-    const format = formats[fieldNum];
+    const format = ISO8583_FIELD_FORMATS[fieldNum];
     const label = format ? format.Label : 'Campo desconhecido';
     console.log(`DE${fieldNum}: ${label} - Valor: ${value}`);
   }

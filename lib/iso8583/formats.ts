@@ -9,7 +9,7 @@ export interface ISO8583FieldFormat {
   Format: string;
 }
 
-const formats: Record<string, ISO8583FieldFormat> = {
+const ISO8583_FIELD_FORMATS: Record<string, ISO8583FieldFormat> = {
   "0": {
     ContentType: "n",
     Label: "Message Type Indicator",
@@ -505,4 +505,4 @@ const formats: Record<string, ISO8583FieldFormat> = {
   }
 };
 
-export default formats;
+export default ISO8583_FIELD_FORMATS;

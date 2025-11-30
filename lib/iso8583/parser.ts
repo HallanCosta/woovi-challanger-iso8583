@@ -1,8 +1,8 @@
 import { bcdToStr } from './utils.ts';
-import formats, { type ISO8583FieldFormat } from './formats.ts';
+import ISO8583_FIELD_FORMATS from './formats.ts';
 import { parseField } from './parserHelpers.ts';
 
-export type ParsedIsoField = {
+export type ParsedIso8583Field = {
   field: number;
   value: string;
   raw: Buffer;
@@ -15,7 +15,7 @@ export type ParsedIsoMessage = {
   mti: string;
   bitmap: Buffer;
   bits: number[];
-  fields: Map<number, ParsedIsoField>;
+  fields: Map<number, ParsedIso8583Field>;
   lastOffset: number;
 };
 
@@ -77,10 +77,10 @@ export function parseIsoMessage(buffer: Buffer): ParsedIsoMessage {
   const bitmap = buffer.subarray(offset, offset + bitmapLength);
   offset += bitmapLength;
 
-  const fields: Map<number, ParsedIsoField> = new Map();
+  const fields: Map<number, ParsedIso8583Field> = new Map();
 
   for (const fieldNum of bits) {
-    const format = formats[fieldNum.toString()];
+    const format = ISO8583_FIELD_FORMATS[fieldNum.toString()];
 
     if (!format) {
       console.warn(`Campo ${fieldNum} não definido em formats`);

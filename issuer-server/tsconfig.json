@@ -18,10 +18,10 @@
     "allowImportingTsExtensions": true,
     "composite": true,
     "noEmit": true,
-    "types": ["node", "vitest/globals"],
-    "rootDirs": ["./src", "../lib"]
+    "types": ["node"],
+    "rootDirs": ["./src", "../lib", "./data"]
   },
-  "include": ["src/**/*", "../lib/iso8583/**/*"],
+  "include": ["src/**/*", "../lib/iso8583/**/*", "./data/**/*"],
   "exclude": [
     "node_modules",
     "dist",

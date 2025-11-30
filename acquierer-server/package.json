@@ -7,7 +7,6 @@
     "dev:acquirer:card:mastercard": "PREFIX=5162 node --experimental-strip-types --env-file .env.scripts scripts/acquirer.ts",
     "dev:acquirer:card:visa": "PREFIX=4026 node --experimental-strip-types --env-file .env.scripts scripts/acquirer.ts",
     "dev:acquirer:pix": "PREFIX=3907 node --experimental-strip-types --env-file .env.scripts scripts/acquirer.ts",
-    "issuer": "node --experimental-strip-types --env-file .env --watch  src/startIssuer.ts",
     "build": "tsc -b tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",

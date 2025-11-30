@@ -2,7 +2,7 @@ import {
   CARD_LIST_HALLAN,
   HALLAN_BIN_PREFIXES,
   HALLAN_MASTERCARD_CARDS,
-} from '../data/cardListBanks.ts';
+} from '../../data/cardListBanksHallan.ts';
 import { authorizationResponse } from './authorization.ts';
 import { reversalResponse } from './reversal.ts';
 import { saleResponse } from './sale.ts';
@@ -32,7 +32,7 @@ const cardIssuedByHallanBank = (cardNumber?: string): boolean => {
   return lists.some((list) => list.includes(cardNumber));
 };
 
-const deriveExpectedCode = (cardNumber?: string): string => {
+export const deriveExpectedCode = (cardNumber?: string): string => {
   if (!cardNumber) return '00';
   const code = HALLAN_MASTERCARD_CARDS[cardNumber as keyof typeof HALLAN_MASTERCARD_CARDS];
   return code ?? '00';

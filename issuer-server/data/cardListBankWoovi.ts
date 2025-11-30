@@ -1,0 +1,33 @@
+const WOOVI_MASTERCARD_MAP = {
+  '2306000000000000': '00',
+  '2306123400000000': '00',
+  '2306444400000000': '00',
+  '2306777700000000': '00',
+  '2306888800000000': '00',
+} as const;
+
+export const WOOVI_MASTERCARD_CARDS = WOOVI_MASTERCARD_MAP;
+export const WOOVI_MASTERCARD_NUMBERS = Object.keys(WOOVI_MASTERCARD_MAP) as readonly string[];
+
+export const WOOVI_VISA_CARDS = [
+  '4815000000000000',
+  '4815999900000000',
+] as const;
+
+export const WOOVI_PIX_CARDS = [
+  '3910000000000000',
+] as const;
+
+export const CARD_LIST_WOOVI = {
+  mastercard: WOOVI_MASTERCARD_CARDS,
+  visa: WOOVI_VISA_CARDS,
+  pix: WOOVI_PIX_CARDS,
+} as const;
+
+export const WOOVI_BIN_PREFIXES = ['2306', '4815', '3910'] as const;
+
+export const WOOVI_PREFIX_TO_LIST = {
+  '2306': WOOVI_MASTERCARD_CARDS,
+  '4815': WOOVI_VISA_CARDS,
+  '3910': WOOVI_PIX_CARDS,
+} as const;

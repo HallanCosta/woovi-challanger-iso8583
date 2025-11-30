@@ -1,0 +1,16 @@
+{
+  "name": "issuer-service",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "node --experimental-strip-types --env-file ../acquierer-server/.env --watch src/server.ts",
+    "start": "node --experimental-strip-types --env-file ../acquierer-server/.env src/server.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "typescript": "^5.9.3"
+  }
+}

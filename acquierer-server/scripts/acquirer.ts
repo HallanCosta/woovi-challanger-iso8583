@@ -1,14 +1,14 @@
 import acquirer from '../src/acquirer.ts';
 import { config } from '../src/config.ts';
-import {
-  HALLAN_MASTERCARD_NUMBERS,
-  HALLAN_PIX_CARDS,
-  HALLAN_VISA_CARDS,
-  WOOVI_MASTERCARD_CARDS,
-  WOOVI_PIX_CARDS,
-  WOOVI_VISA_CARDS,
-} from '../src/data/cardListBanks.ts';
 import { closeIssuerConnection } from '../src/tcpConnectionManager.ts';
+// import {
+//   HALLAN_MASTERCARD_NUMBERS,
+//   HALLAN_PIX_CARDS,
+//   HALLAN_VISA_CARDS,
+//   WOOVI_MASTERCARD_CARDS,
+//   WOOVI_PIX_CARDS,
+//   WOOVI_VISA_CARDS,
+// } from '../issuer-server/data/cardListBanksHallan.ts';
 
 const transaction = {
   amount: '000000005214',                  // Value to response code
