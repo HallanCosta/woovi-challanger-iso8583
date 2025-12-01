@@ -19,14 +19,13 @@
     "composite": true,
     "noEmit": true,
     "types": ["node"],
-    "rootDirs": ["./src", "../lib"]
+    "rootDirs": ["./src", "../lib", "../data"]
   },
-  "include": ["src/**/*", "../lib/iso8583/**/*", "../lib/tcp/**/*"],
+  "include": ["src/**/*", "../lib/iso8583/**/*", "../lib/tcp/**/*", "../data/**/*"],
   "exclude": [
     "node_modules",
     "dist",
     "coverage",
-    "vitest.config.ts",
     "**/*.test.ts",
     "**/*.spec.ts"
   ]

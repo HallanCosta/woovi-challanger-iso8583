@@ -1,4 +1,4 @@
-import { SALES_RESPONSE_CODES } from '../../../lib/iso8583/enums/response.ts';
+import { ISO8583_RESPONSE_CODES } from '../../../lib/iso8583/responseCodes.ts';
 import type { LogicResponse } from './types.ts';
 
 const APPROVED_RESPONSE = '00';
@@ -30,6 +30,6 @@ export const saleResponse = (
     return { mti: '0210', responseCode: '99' };
   }
 
-  const mapped = SALES_RESPONSE_CODES.find((entry) => entry.req === expectedCode);
+  const mapped = ISO8583_RESPONSE_CODES.find((entry) => entry.req === expectedCode);
   return { mti: '0210', responseCode: mapped?.res ?? APPROVED_RESPONSE };
 };

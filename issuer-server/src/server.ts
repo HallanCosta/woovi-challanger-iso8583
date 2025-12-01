@@ -1,7 +1,7 @@
 import { processMessage } from './issuer.ts';
-import { createTcpServer } from './tcpServer.ts';
+import { createTcpServer } from '../../lib/tcp/server.ts';
 
-const port = Number(process.env.ISSUER_PORT);
+const port = Number(process.env.SERVER_PORT);
 
 const server = createTcpServer(port);
 

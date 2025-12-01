@@ -1,0 +1,14 @@
+{
+  "name": "brands-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --experimental-strip-types --env-file ../brands-server/.env --watch src/server.ts",
+    "start": "node --experimental-strip-types --env-file ../brands-server/.env src/server.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "typescript": "^5.9.3"
+  }
+}

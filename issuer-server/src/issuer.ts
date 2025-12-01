@@ -1,10 +1,15 @@
 import { Socket } from 'node:net';
 
-import { encodeBitmap, parseIsoMessage, type ParsedIsoMessage, type ParsedIso8583Field } from '../../lib/iso8583/parser.ts';
+import {
+  encodeBitmap,
+  parseIncomingMessage,
+  type ParsedIsoMessage,
+  type ParsedIso8583Field,
+} from '../../lib/iso8583/parser.ts';
 import { encodeField } from '../../lib/iso8583/encoder.ts';
 import { strToBCD } from '../../lib/iso8583/utils.ts';
 import ISO8583_FIELD_FORMATS from '../../lib/iso8583/formats.ts';
-import { HALLAN_MASTERCARD_CARDS } from '../data/cardListBanksHallan.ts';
+import { HALLAN_MASTERCARD_CARDS } from './data/cardListBanksHallan.ts';
 
 import { resolveDelegate } from './logic/delegate.ts';
 import { logRequest, logResponse } from './utils/logs.ts';
@@ -22,11 +27,6 @@ export type ProcessMessageInput = {
   clientLabel: string;
 };
 
-type ParseIncomingMessage = {
-  tpdu: Buffer;
-  iso: ParsedIsoMessage;
-};
-
 type BuildResponseBuffer = {
   parsed: ParsedIsoMessage;
   mti: string;
@@ -34,24 +34,6 @@ type BuildResponseBuffer = {
 };
 
 const TPDU_RESPONSE = Buffer.from('6000000001', 'hex');
-
-const parseIncomingMessage = (message: Buffer): ParseIncomingMessage => {
-  const mli = message.readUInt16BE(0);
-  const payload = message.subarray(2);
-
-  if (payload.length < mli) {
-    throw new Error(`Incomplete ISO8583 payload. Expected ${mli} bytes, got ${payload.length}`);
-  }
-
-  const tpdu = payload.subarray(0, 5);
-  const isoPayload = payload.subarray(5, mli);
-
-  if (isoPayload.length < 2) {
-    throw new Error('Missing MTI');
-  }
-
-  return { tpdu, iso: parseIsoMessage(isoPayload) };
-};
 
 const buildResponseBuffer = ({ parsed, mti, rc }: BuildResponseBuffer
 ): BuildResponseResult => {
@@ -127,7 +109,11 @@ export const processMessage = ({ socket, message, clientLabel }: ProcessMessageI
     rc: resolution.responseCode,
   });
 
-  logRequest({ message, parsed: parsedReq.iso, cardNumber });
+  logRequest({
+    message,
+    parsed: parsedReq.iso,
+    cardNumber
+  });
   logResponse({
     fields: response.fields,
     rc: resolution.responseCode,
@@ -142,7 +128,6 @@ export const processMessage = ({ socket, message, clientLabel }: ProcessMessageI
   const issuerTag = resolution.issuerFound ? '' : ' (issuer not found)';
 
   console.log('\n ========== SUMMARY ========== \n');
-
   console.log(
     `[ISSUER][HALLAN] ${clientLabel} MTI ${parsedReq.iso.mti} ProcCode ${processingCode} Amount ${amount} -> RC ${rc}${issuerTag}`
   );

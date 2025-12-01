@@ -18,10 +18,10 @@
     "allowImportingTsExtensions": true,
     "composite": true,
     "noEmit": true,
-    "types": ["node"],
-    "rootDirs": ["./src", "../lib"]
+    "types": ["node", "vitest/globals"],
+    "rootDirs": ["./src", "../lib", "../issuer-server/src/data"]
   },
-  "include": ["src/**/*", "../lib/iso8583/**/*", "../lib/tcp/**/*"],
+  "include": ["src/**/*", "../lib/iso8583/**/*", "../lib/tcp/**/*", "../issuer-server/src/data/**/*"],
   "exclude": [
     "node_modules",
     "dist",

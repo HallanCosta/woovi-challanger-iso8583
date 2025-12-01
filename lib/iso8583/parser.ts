@@ -119,6 +119,45 @@ export function parseIsoFromBuffer(buffer: Buffer): Record<string, any> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Incoming message helpers
+// ---------------------------------------------------------------------------
+
+export type ParsedIncomingMessage = { tpdu: Buffer; iso: ParsedIsoMessage };
+
+/**
+ * Parse an incoming buffer with MLI + TPDU + ISO8583 payload.
+ */
+export function parseIncomingMessage(message: Buffer): ParsedIncomingMessage {
+  const mli = message.readUInt16BE(0);
+  const payload = message.subarray(2);
+
+  if (payload.length < mli) {
+    throw new Error(`Incomplete ISO8583 payload. Expected ${mli} bytes, got ${payload.length}`);
+  }
+
+  const tpdu = payload.subarray(0, 5);
+  const isoPayload = payload.subarray(5, mli);
+
+  if (isoPayload.length < 2) {
+    throw new Error('Missing MTI');
+  }
+
+  return { tpdu, iso: parseIsoMessage(isoPayload) };
+}
+
+/**
+ * Derive the response MTI based on the request MTI.
+ * Allows overriding the fallback when the mapping is unknown.
+ */
+export function deriveResponseMti(requestMti: string, fallback?: string): string {
+  if (requestMti === '0100') return '0110';
+  if (requestMti === '0200') return '0210';
+  if (requestMti === '0400') return '0410';
+  if (requestMti === '0800') return '0810';
+  return fallback ?? requestMti;
+}
+
 export function parseJson(fields: Record<string, any>): string {
   return JSON.stringify(fields, null, 2);
 }

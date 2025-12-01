@@ -1,8 +1,6 @@
-import {
-  CARD_LIST_HALLAN,
-  HALLAN_BIN_PREFIXES,
-  HALLAN_MASTERCARD_CARDS,
-} from '../../data/cardListBanksHallan.ts';
+import { CARD_LIST_HALLAN, HALLAN_MASTERCARD_CARDS } from '../data/cardListBanksHallan.ts';
+import { HALLAN_BIN_PREFIXES } from '../data/bankHallan.ts';
+import { deriveResponseMti } from '../../../lib/iso8583/parser.ts';
 import { authorizationResponse } from './authorization.ts';
 import { reversalResponse } from './reversal.ts';
 import { saleResponse } from './sale.ts';
@@ -17,13 +15,6 @@ export type DelegateInput = {
 };
 
 export type DelegateResult = LogicResponse & { issuerFound: boolean };
-
-const deriveResponseMti = (requestMti: string): string => {
-  if (requestMti === '0100') return '0110';
-  if (requestMti === '0400') return '0410';
-  if (requestMti === '0800') return '0810';
-  return '0210';
-};
 
 const cardIssuedByHallanBank = (cardNumber?: string): boolean => {
   if (!cardNumber) return true;
@@ -45,7 +36,7 @@ export const resolveDelegate = (input: DelegateInput): DelegateResult => {
   if (!cardIssuedByHallanBank(input.cardNumber)) {
     return {
       issuerFound: false,
-      mti: deriveResponseMti(input.mti),
+      mti: deriveResponseMti(input.mti, '0210'),
       responseCode: '15',
     };
   }
@@ -73,5 +64,5 @@ export const resolveDelegate = (input: DelegateInput): DelegateResult => {
     return { issuerFound: true, ...testResponse() };
   }
 
-  return { issuerFound: true, mti: deriveResponseMti(input.mti), responseCode: '99' };
+  return { issuerFound: true, mti: deriveResponseMti(input.mti, '0210'), responseCode: '99' };
 };
