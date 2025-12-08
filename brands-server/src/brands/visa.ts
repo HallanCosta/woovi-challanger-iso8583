@@ -16,8 +16,8 @@ export const visa = async (pan: string, processingCode?: string): Promise<Connec
   }
 
   const socket = await getIssuerConnection();
-  console.log(`[BRANDS][VISA-HALLAN] Routing PAN ${pan} to issuer`);
-  console.log(`[BRANDS][VISA-HALLAN] Routing ProcessingCode ${processingCode}`);
+  console.log(`[BRANDS][VISA->ISSUER:HALLAN] Routing PAN ${pan} to issuer`);
+  console.log(`[BRANDS][VISA->ISSUER:HALLAN] Routing ProcessingCode ${processingCode}`);
 
   return { name: 'visa-hallan', socket };
 };

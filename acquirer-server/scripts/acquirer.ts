@@ -7,7 +7,7 @@ const transaction = {
   acquirerInstitution: '01020000000',      // Code acquirer (LLVAR)
   merchantId: 'WOOVIMERCHANT001',          // ID do merchant (hex) - ajustado para length par
   currency: '986',                         // Currency (hex) - 764 = BRL
-  cardNumber: '3907000000000000',          // Card number with brand pix (PAN)
+  cardNumber: '5162000000000000',          // Card number with brand pix (PAN)
   // cardNumber: HALLAN_PIX_CARDS[0],
   // cardNumber: HALLAN_MASTERCARD_NUMBERS[0],
   // cardNumber: HALLAN_VISA_CARDS[0],

@@ -19,9 +19,9 @@
     "composite": true,
     "noEmit": true,
     "types": ["node", "vitest/globals"],
-    "rootDirs": ["./src", "../lib", "../issuer-server/src/data"]
+    "rootDirs": ["./src", "../lib"]
   },
-  "include": ["src/**/*", "../lib/iso8583/**/*", "../lib/tcp/**/*", "../issuer-server/src/data/**/*"],
+  "include": ["src/**/*", "../lib/iso8583/**/*", "../lib/tcp/**/*"],
   "exclude": [
     "node_modules",
     "dist",

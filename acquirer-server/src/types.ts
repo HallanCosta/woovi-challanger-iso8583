@@ -6,4 +6,5 @@ export interface Transaction {
   currency: string;            // Currency (hex) - 764 = BRL
   cardNumber: string;          // Card number with brand pix (PAN)
   processingCode?: string;     // Processing code
+  holdId?: string;             // Hold identifier returned by issuer (DE48/62)
 }

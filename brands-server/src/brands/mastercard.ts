@@ -16,7 +16,7 @@ export const mastercard = async (pan: string, processingCode: string): Promise<C
   }
 
   const socket = await getIssuerConnection();
-  console.log(`[BRANDS][MASTERCARD-HALLAN] Routing PAN ${pan} to issuer | PC ${processingCode}`);
-  console.log(`[BRANDS][MASTERCARD-HALLAN] Routing ProcessingCode ${processingCode}`);
+  console.log(`[BRANDS][MASTERCARD->ISSUER:HALLAN] Routing PAN ${pan} to issuer | PC ${processingCode}`);
+  console.log(`[BRANDS][MASTERCARD->ISSUER:HALLAN] Routing ProcessingCode ${processingCode}`);
   return { name: 'mastercard-hallan', socket };
 };

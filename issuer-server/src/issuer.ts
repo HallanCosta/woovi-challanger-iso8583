@@ -1,25 +1,17 @@
 import { Socket } from 'node:net';
 
-import {
-  encodeBitmap,
-  parseIncomingMessage,
-  type ParsedIsoMessage,
-  type ParsedIso8583Field,
-} from '../../lib/iso8583/parser.ts';
-import { encodeField } from '../../lib/iso8583/encoder.ts';
-import { strToBCD } from '../../lib/iso8583/utils.ts';
-import ISO8583_FIELD_FORMATS from '../../lib/iso8583/formats.ts';
-import { HALLAN_MASTERCARD_CARDS } from './data/cardListBanksHallan.ts';
+import { parseIso8583IncomingMessage } from '../../lib/iso8583/parser.ts';
+import { getResponseMti } from '../../lib/iso8583/response.ts';
+import { buildIso8583Response } from '../../lib/iso8583/response.ts';
+import { ISO8583_RESPONSE_CODES_NAMES } from '../../lib/iso8583/responseCodes.ts';
+import { MTI } from '../../lib/iso8583/mti.ts';
 
-import { resolveDelegate } from './logic/delegate.ts';
-import { logRequest, logResponse } from './utils/logs.ts';
+import { logMessage } from './utils/logs.ts';
+import { TPDU_RESPONSE } from './utils/tpdu.ts';
+import { findCard } from './utils/cards.ts';
 
-export type BuildResponseResult = {
-  buffer: Buffer;
-  fields: ParsedIso8583Field[];
-  mliDec: number;
-  mliHex: string;
-};
+import { authorizeCard } from './card/cardAuthorization.ts';
+import { createCardTransaction } from './card/cardTransaction.ts';
 
 export type ProcessMessageInput = {
   socket: Socket;
@@ -27,110 +19,75 @@ export type ProcessMessageInput = {
   clientLabel: string;
 };
 
-type BuildResponseBuffer = {
-  parsed: ParsedIsoMessage;
-  mti: string;
-  rc: string;
-};
+// Process message to authorization and transaction
+export async function processMessageTb({ socket, message, clientLabel }: ProcessMessageInput): Promise<void> {
+  const parsed = parseIso8583IncomingMessage({ message });
+  const mti = parsed.iso.mti;
 
-const TPDU_RESPONSE = Buffer.from('6000000001', 'hex');
+  console.log(`[ISSUER] ${clientLabel} MTI ${mti}`);
 
-const buildResponseBuffer = ({ parsed, mti, rc }: BuildResponseBuffer
-): BuildResponseResult => {
-  const fields = new Map(parsed.fields);
-  fields.set(39, {
-    field: 39,
-    value: rc,
-    raw: encodeField(39, rc),
-    length: 0,
-    startOffset: 0,
-    endOffset: 0,
+  if (mti === MTI.AUTHORIZATION_REQUEST) {
+    const res = await authorizeCard({ iso: parsed.iso });
+    socket.write(res.buffer);
+    return;
+  }
+
+  if (mti === MTI.SALE_REQUEST) {
+    const res = await createCardTransaction({ iso: parsed.iso });
+    socket.write(res.buffer);
+    return;
+  }
+
+  console.log(`[ISSUER] Unknown MTI ${mti}, echo back.`);
+  socket.write(message);
+}
+
+// Alternative entry point mirroring processMessageTb to simulation.
+export const processMessage = ({ socket, message, clientLabel }: ProcessMessageInput) => {
+  const parsedMessage = parseIso8583IncomingMessage({ message });
+  const cardNumber = parsedMessage.iso.fields.get(2)?.value ?? '';
+  const mti = parsedMessage.iso.mti;
+
+  if (!findCard(cardNumber)) {
+    const response = buildIso8583Response({
+      parsed: parsedMessage.iso,
+      mti: getResponseMti({ requestMti: mti }),
+      rc: ISO8583_RESPONSE_CODES_NAMES.INVALID_CARD,
+      tpdu: TPDU_RESPONSE
+    });
+
+    // Log the response message
+    logMessage({
+      message,
+      parsed: parsedMessage.iso,
+      fields: response.fields,
+      rc: ISO8583_RESPONSE_CODES_NAMES.INVALID_CARD,
+      mliDec: response.mliDec,
+      mliHex: response.mliHex,
+      buffer: response.buffer,
+    });
+
+    socket.write(response.buffer);
+    return;
+  }
+
+  const response = buildIso8583Response({
+    parsed: parsedMessage.iso,
+    mti: getResponseMti({ requestMti: mti }),
+    rc: ISO8583_RESPONSE_CODES_NAMES.APPROVED,
+    tpdu: TPDU_RESPONSE
   });
 
-  const sortedFields = Array.from(fields.values()).sort((a, b) => a.field - b.field);
-  const encodedBuffers = sortedFields.map((data) => {
-    if (data.field === 39) return data.raw!;
-
-    const format = ISO8583_FIELD_FORMATS[data.field.toString()];
-
-    if (format && (format.LenType === 'llvar' || format.LenType === 'lllvar')) {
-      const lenDigits = format.LenType === 'llvar' ? 2 : 3;
-      const rawData = data.raw ?? Buffer.alloc(0);
-      const lenStr = rawData.length.toString().padStart(lenDigits, '0');
-      const lenPrefix = strToBCD(lenStr, Math.ceil(lenDigits / 2));
-      return Buffer.concat([lenPrefix, rawData]);
-    }
-
-    return data.raw ?? encodeField(data.field, data.value);
-  });
-  const bitmap = encodeBitmap(sortedFields.map((f) => f.field));
-
-  const responseIso = Buffer.concat([
-    strToBCD(mti, 2),
-    bitmap,
-    ...encodedBuffers,
-  ]);
-
-  const mliDec = TPDU_RESPONSE.length + responseIso.length;
-  const mliHex = mliDec.toString(16).padStart(4, '0').toUpperCase();
-  const mliBuffer = Buffer.alloc(2);
-  mliBuffer.writeUInt16BE(mliDec, 0);
-
-  const parsedFields: ParsedIso8583Field[] = sortedFields.map((f, idx) => ({
-    field: f.field,
-    value: f.value,
-    raw: encodedBuffers[idx],
-    length: encodedBuffers[idx].length,
-    startOffset: 0,
-    endOffset: 0,
-  }));
-
-  return {
-    buffer: Buffer.concat([mliBuffer, TPDU_RESPONSE, responseIso]),
-    fields: parsedFields,
-    mliDec,
-    mliHex,
-  };
-};
-
-export const processMessage = ({ socket, message, clientLabel }: ProcessMessageInput): void => {
-  const parsedReq = parseIncomingMessage(message);
-  const cardNumber = parsedReq.iso.fields.get(2)?.value ?? '';
-
-  const resolution = resolveDelegate({
-    mti: parsedReq.iso.mti,
-    processingCode: parsedReq.iso.fields.get(3)?.value ?? '',
-    cardNumber,
-  });
-
-  const response = buildResponseBuffer({
-    parsed: parsedReq.iso,
-    mti: resolution.mti,
-    rc: resolution.responseCode,
-  });
-
-  logRequest({
+  // Log the response message
+  logMessage({
     message,
-    parsed: parsedReq.iso,
-    cardNumber
-  });
-  logResponse({
+    parsed: parsedMessage.iso,
     fields: response.fields,
-    rc: resolution.responseCode,
+    rc: ISO8583_RESPONSE_CODES_NAMES.APPROVED,
     mliDec: response.mliDec,
     mliHex: response.mliHex,
     buffer: response.buffer,
   });
-
-  const amount = parsedReq.iso.fields.get(4)?.value ?? 'unknown';
-  const processingCode = parsedReq.iso.fields.get(3)?.value ?? '000000';
-  const rc = resolution.responseCode;
-  const issuerTag = resolution.issuerFound ? '' : ' (issuer not found)';
-
-  console.log('\n ========== SUMMARY ========== \n');
-  console.log(
-    `[ISSUER][HALLAN] ${clientLabel} MTI ${parsedReq.iso.mti} ProcCode ${processingCode} Amount ${amount} -> RC ${rc}${issuerTag}`
-  );
 
   socket.write(response.buffer);
 };

@@ -1,5 +1,5 @@
 import { bcdToStr } from './utils.ts';
-import type { ISO8583FieldFormat } from './formats.ts';
+import type { iso8583FieldFormat } from './formats.ts';
 
 const ASCII_FIXED = new Set(['n', 'a', 'an']);
 const ASCII_VARIABLE = new Set(['n', 'a', 'an', 'ans']);
@@ -26,7 +26,7 @@ const readBcd = (buffer: Buffer, offset: number, digits: number) => {
   return { value: bcdToStr(raw, digits), raw, newOffset: offset + bytes };
 };
 
-const parseFixedField = (buffer: Buffer, offset: number, format: ISO8583FieldFormat) => {
+const parseFixedField = (buffer: Buffer, offset: number, format: iso8583FieldFormat) => {
   const { ContentType: contentType, Format: fieldFormat, MaxLen: size } = format;
 
   if (contentType === 'n' && fieldFormat === 'BCD') {
@@ -43,7 +43,7 @@ const parseFixedField = (buffer: Buffer, offset: number, format: ISO8583FieldFor
 const parseVariableField = (
   buffer: Buffer,
   offset: number,
-  format: ISO8583FieldFormat,
+  format: iso8583FieldFormat,
   lengthDigits: number
 ) => {
   const { ContentType: contentType } = format;
@@ -59,7 +59,7 @@ const parseVariableField = (
 export function parseField(
   buffer: Buffer,
   offset: number,
-  format: ISO8583FieldFormat
+  format: iso8583FieldFormat
 ): { value: string; raw: Buffer; newOffset: number } {
   switch (format.LenType) {
     case 'fixed':

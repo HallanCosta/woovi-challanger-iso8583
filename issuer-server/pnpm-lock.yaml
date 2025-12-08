@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      tigerbeetle-node:
+        specifier: ^0.16.66
+        version: 0.16.66
     devDependencies:
       '@types/node':
         specifier: ^24.9.2
@@ -19,6 +23,10 @@ packages:
 
   '@types/node@24.10.1':
     resolution: {integrity: sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ==}
+
+  tigerbeetle-node@0.16.66:
+    resolution: {integrity: sha512-udvjrbZjxqbUPfHf9yrF22ajV5BitrPS0eF5ZSIukh66IqYxcMVwGd0Jhd/LDdtmSfTrRFKfGi8Dmi67NlIG4g==}
+    engines: {node: '>=14.0.0'}
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
@@ -33,6 +41,8 @@ snapshots:
   '@types/node@24.10.1':
     dependencies:
       undici-types: 7.16.0
+
+  tigerbeetle-node@0.16.66: {}
 
   typescript@5.9.3: {}
 

@@ -8,7 +8,7 @@
 import { once } from 'node:events';
 import { Socket } from 'node:net';
 
-import { createPurchaseMessage } from './handlers/messageHandler.ts';
+import { createPurchaseMessage, createAuthMessage } from './handlers/messageHandler.ts';
 import { amountToCurrency } from '../../lib/iso8583/utils.ts';
 import { parseIsoFromBuffer } from '../../lib/iso8583/parser.ts';
 import { ISO8583_RESPONSE_CODES } from '../../lib/iso8583/responseCodes.ts';
@@ -20,7 +20,6 @@ import type { ConnectorResult, ActiveConnectorResult, NoopConnectorResult } from
 import type { Transaction } from './types.ts';
 
 const DEBUG = process.env.DEBUG === 'true';
-const TRANSACTION_TYPE = 'sale';
 const RESPONSE_CODE_APPROVED = '00';
 // const { CONNECTION_TIMEOUT_MS } = tcpConfig;
 
@@ -108,102 +107,149 @@ const processTransaction = async (transaction: Transaction): Promise<any> => {
   const { socket: client, name } = connector as ActiveConnectorResult;
   connectorName = name;
 
-  //
-  // Transaction Builders
-  //
   const transactionHandlers: Record<string, (opts: Transaction) => Buffer> = {
     sale: createPurchaseMessage,
-    // auth: createAuthMessage,
+    auth: createAuthMessage,
     // void: (opts) => createVoidMessage({...}),
     // reversal: ...
   };
 
-  const transactionHandler = transactionHandlers[TRANSACTION_TYPE];
+  const sendAndParse = async (kind: 'sale' | 'auth') => {
+    const handler = transactionHandlers[kind];
+    if (!handler) throw new Error(`Invalid transaction type: ${kind}`);
 
-  if (!transactionHandler) {
-    return {
-      success: false,
-      message: 'Invalid transaction type',
-      processingCodeName,
-      brandName
-    };
-  }
+    const buffer = handler(transaction);
 
-  //
-  // BUILD ISO8583 BUFFER
-  //
-  const buffer = transactionHandler(transaction);
-
-  if (DEBUG) {
-    console.log('='.repeat(60));
-    console.log(`💳 CREATING MESSAGE OF ${TRANSACTION_TYPE.toUpperCase()}`);
-    console.log('='.repeat(60));
-    console.log('\n📋 Customized transaction:');
-    console.log(`   Value: R$ ${amountToCurrency(transaction.amount)}`);
-    console.log(`   Transaction ID: ${transaction.transactionId}`);
-    console.log(`   Acquirer: ${transaction.acquirerInstitution}`);
-    console.log(`   Currency: BRL (${transaction.currency})`);
-    console.log(`   Card Number: ${transaction.cardNumber}`);
-    console.log(`   Processing Code: ${transaction.processingCode}`);
-    console.log(`   Brand Name: ${brandName}`);
-    console.log(`   Connector: ${connectorName}`);
-
-    console.log(`\n📦 Buffer (${buffer.length} bytes)`);
-    console.log(`Hex: ${buffer.toString('hex')}\n`);
-    console.log('📤 Sending to simulator...\n');
-  }
-
-  // client.setTimeout(CONNECTION_TIMEOUT_MS);
-
-  const data = await awaitResponse(client, buffer);
-
-  if (DEBUG) {
-    console.log(`📦 Response received (${data.length} bytes)`);
-    console.log(`Hex: ${data.toString('hex')}\n`);
-  }
-
-  // Remove header (MLI + TPDU)
-  const isoPayload = data.subarray(7);
-
-  //
-  // Parse response buffer
-  //
-  const parsed = parseIsoFromBuffer(isoPayload);
-  const responseCode: string = parsed['39'];
-
-  const isApproved = responseCode === RESPONSE_CODE_APPROVED;
-
-  const saleResponseCode = ISO8583_RESPONSE_CODES
-    .find(sale => sale.req === responseCode);
-
-  const description = saleResponseCode?.desc ?? 'Invalid processing code';
-
-  if (!isApproved) {
     if (DEBUG) {
-      console.log(`❌ ${description}:`, responseCode)
+      console.log('='.repeat(60));
+      console.log(`💳 CREATING MESSAGE OF ${kind.toUpperCase()}`);
+      console.log('='.repeat(60));
+      console.log('\n📋 Customized transaction:');
+      console.log(`   Value: R$ ${amountToCurrency(transaction.amount)}`);
+      console.log(`   Transaction ID: ${transaction.transactionId}`);
+      console.log(`   Acquirer: ${transaction.acquirerInstitution}`);
+      console.log(`   Currency: BRL (${transaction.currency})`);
+      console.log(`   Card Number: ${transaction.cardNumber}`);
+      console.log(`   Processing Code: ${transaction.processingCode}`);
+      console.log(`   Brand Name: ${brandName}`);
+      console.log(`   Connector: ${connectorName}`);
+
+      console.log(`\n📦 Buffer (${buffer.length} bytes)`);
+      console.log(`Hex: ${buffer.toString('hex')}\n`);
+      console.log('📤 Sending to simulator...\n');
+    }
+
+    const data = await awaitResponse(client, buffer);
+
+    if (DEBUG) {
+      console.log(`📦 Response received (${data.length} bytes)`);
+      console.log(`Hex: ${data.toString('hex')}\n`);
+    }
+
+    const isoPayload = data.subarray(7);
+    const parsed = parseIsoFromBuffer(isoPayload);
+    const responseCode: string = parsed['39'];
+    const isApproved = responseCode === RESPONSE_CODE_APPROVED;
+    const saleResponseCode = ISO8583_RESPONSE_CODES.find((sale) => sale.req === responseCode);
+    const description = saleResponseCode?.desc ?? 'Invalid processing code';
+
+    const holdRaw = parsed['48'] ?? parsed['62'];
+    const holdStr = Buffer.isBuffer(holdRaw)
+      ? holdRaw.toString('ascii')
+      : holdRaw != null
+        ? String(holdRaw)
+        : '';
+    let holdHex = holdStr.replace(/[^a-fA-F0-9]/g, '');
+    if (holdHex.length > 32) {
+      holdHex = holdHex.slice(-32);
+    }
+
+    if (DEBUG && holdHex) {
+      console.log(`[ACQUIRER] Captured holdId from response (hex): ${holdHex}`);
+    }
+
+    const holdId = holdHex || undefined;
+
+    return { responseCode, isApproved, description, holdId };
+  };
+
+  // Cards: AUTH (0100) then FINANCIAL (0200). Pix: only FINANCIAL (0200).
+  if (transaction.processingCode === PROCESSING_CODE.CARD) {
+    const auth = await sendAndParse('auth');
+
+    if (!auth.isApproved) {
+      if (DEBUG) console.log(`❌ AUTH FAILED: ${auth.description} (${auth.responseCode})`);
+      return {
+        success: false,
+        responseCode: auth.responseCode,
+        amount: transaction.amount,
+        message: auth.description,
+        type: processingCodeName,
+        brandName,
+        stage: 'authorization',
+      };
+    }
+
+    if (auth.holdId) {
+      transaction.holdId = auth.holdId;
+    }
+
+    const sale = await sendAndParse('sale');
+
+    if (!sale.isApproved) {
+      if (DEBUG) console.log(`❌ SALE FAILED: ${sale.description} (${sale.responseCode})`);
+      return {
+        success: false,
+        responseCode: sale.responseCode,
+        amount: transaction.amount,
+        message: sale.description,
+        type: processingCodeName,
+        brandName,
+        stage: 'financial',
+      };
+    }
+
+    if (DEBUG) {
+      console.log(`✅ Approved:`, sale.responseCode);
     }
 
     return {
-      success: false,
-      responseCode,
+      success: true,
+      responseCode: sale.responseCode,
       amount: transaction.amount,
-      message: description,
+      message: sale.description,
       type: processingCodeName,
-      brandName
+      brandName,
+    };
+  }
+
+  // PIX or other direct financial requests
+  const sale = await sendAndParse('sale');
+
+  if (!sale.isApproved) {
+    if (DEBUG) console.log(`❌ SALE FAILED: ${sale.description} (${sale.responseCode})`);
+    return {
+      success: false,
+      responseCode: sale.responseCode,
+      amount: transaction.amount,
+      message: sale.description,
+      type: processingCodeName,
+      brandName,
+      stage: 'financial',
     };
   }
 
   if (DEBUG) {
-    console.log(`✅ Approved:`, responseCode);
+    console.log(`✅ Approved:`, sale.responseCode);
   }
 
   return {
     success: true,
-    responseCode,
+    responseCode: sale.responseCode,
     amount: transaction.amount,
-    message: description,
+    message: sale.description,
     type: processingCodeName,
-    brandName
+    brandName,
   };
 };
 

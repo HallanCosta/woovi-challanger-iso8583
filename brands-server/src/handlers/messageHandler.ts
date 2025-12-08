@@ -3,17 +3,17 @@ import type { Socket } from 'node:net';
 
 import {
   encodeBitmap,
-  parseIncomingMessage,
-  deriveResponseMti,
+  parseIso8583IncomingMessage,
   type ParsedIsoMessage,
 } from '../../../lib/iso8583/parser.ts';
+import { getResponseMti } from '../../../lib/iso8583/response.ts';
 import { encodeField } from '../../../lib/iso8583/encoder.ts';
 import { strToBCD } from '../../../lib/iso8583/utils.ts';
 import ISO8583_FIELD_FORMATS from '../../../lib/iso8583/formats.ts';
 import { routePan } from '../connectorService.ts';
+import { TPDU_RESPONSE } from '../utils/tpdu.ts';
 
-const TPDU_RESPONSE = Buffer.from('6000000001', 'hex');
-
+// Build a 0210 response with RC 15 when no issuer/route is found.
 const buildRc15Response = (parsed: ParsedIsoMessage): Buffer => {
   const fields = new Map(parsed.fields);
   fields.set(39, {
@@ -27,7 +27,9 @@ const buildRc15Response = (parsed: ParsedIsoMessage): Buffer => {
 
   const sortedFields = Array.from(fields.values()).sort((a, b) => a.field - b.field);
   const encodedBuffers = sortedFields.map((data) => {
+
     if (data.field === 39) return data.raw!;
+
     const format = ISO8583_FIELD_FORMATS[data.field.toString()];
 
     if (format && (format.LenType === 'llvar' || format.LenType === 'lllvar')) {
@@ -41,7 +43,7 @@ const buildRc15Response = (parsed: ParsedIsoMessage): Buffer => {
     return data.raw ?? encodeField(data.field, data.value);
   });
 
-  const mti = deriveResponseMti(parsed.mti);
+  const mti = getResponseMti({ requestMti: parsed.mti });
   const bitmap = encodeBitmap(sortedFields.map((f) => f.field));
   const responseIso = Buffer.concat([strToBCD(mti, 2), bitmap, ...encodedBuffers]);
 
@@ -53,10 +55,11 @@ const buildRc15Response = (parsed: ParsedIsoMessage): Buffer => {
 };
 
 export const processMessage = async (client: Socket, message: Buffer, clientLabel: string) => {
-  const parsed = parseIncomingMessage(message);
+  const parsed = parseIso8583IncomingMessage({ message });
   const pan = parsed.iso.fields.get(2)?.value ?? '';
   const processingCode = String(parsed.iso.fields.get(3)?.value);
 
+  // Route to brand (visa, mastercard, pix)
   const connector = await routePan(pan, processingCode);
 
   if (connector.noop || !connector.socket) {
@@ -69,6 +72,7 @@ export const processMessage = async (client: Socket, message: Buffer, clientLabe
 
   const issuerSocket = connector.socket;
   issuerSocket.write(message);
+
   const [response] = await once(issuerSocket, 'data');
   client.write(response as Buffer);
 };

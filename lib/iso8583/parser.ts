@@ -124,11 +124,12 @@ export function parseIsoFromBuffer(buffer: Buffer): Record<string, any> {
 // ---------------------------------------------------------------------------
 
 export type ParsedIncomingMessage = { tpdu: Buffer; iso: ParsedIsoMessage };
+export type ParseIso8583IncomingParams = { message: Buffer };
 
 /**
  * Parse an incoming buffer with MLI + TPDU + ISO8583 payload.
  */
-export function parseIncomingMessage(message: Buffer): ParsedIncomingMessage {
+export function parseIso8583IncomingMessage({ message }: ParseIso8583IncomingParams): ParsedIncomingMessage {
   const mli = message.readUInt16BE(0);
   const payload = message.subarray(2);
 
@@ -144,18 +145,6 @@ export function parseIncomingMessage(message: Buffer): ParsedIncomingMessage {
   }
 
   return { tpdu, iso: parseIsoMessage(isoPayload) };
-}
-
-/**
- * Derive the response MTI based on the request MTI.
- * Allows overriding the fallback when the mapping is unknown.
- */
-export function deriveResponseMti(requestMti: string, fallback?: string): string {
-  if (requestMti === '0100') return '0110';
-  if (requestMti === '0200') return '0210';
-  if (requestMti === '0400') return '0410';
-  if (requestMti === '0800') return '0810';
-  return fallback ?? requestMti;
 }
 
 export function parseJson(fields: Record<string, any>): string {

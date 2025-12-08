@@ -1,0 +1,14 @@
+FROM node:22-alpine
+WORKDIR /app
+
+# Copy sources (context is repo root)
+COPY issuer-server/package.json issuer-server/tsconfig.json ./
+COPY issuer-server/src ./src
+COPY lib ./lib
+
+# Install all deps (dev included) for type-check, then prune to production
+RUN npm install \
+  && npm run type-check \
+  && npm prune --production
+
+CMD ["node", "--experimental-strip-types", "src/server.ts"]

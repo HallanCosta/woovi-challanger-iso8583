@@ -16,7 +16,7 @@ export const pix = async (pan: string, processingCode: string): Promise<Connecto
   }
 
   const socket = await getIssuerConnection();
-  console.log(`[BRANDS][PIX-HALLAN] Routing PAN ${pan} to issuer`);
-  console.log(`[BRANDS][PIX-HALLAN] Routing ProcessingCode ${processingCode} to issuer`);
+  console.log(`[BRANDS][PIX->ISSUER:HALLAN Routing PAN ${pan} to issuer`);
+  console.log(`[BRANDS][PIX->ISSUER:HALLAN Routing ProcessingCode ${processingCode} to issuer`);
   return { name: 'pix-hallan', socket };
 };

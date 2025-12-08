@@ -47,7 +47,17 @@ const buildFieldsFromTransaction = ({
     },
   ];
 
-  return [...baseFields, ...extraFields];
+  const maybeHoldId: IsoField[] =
+    transaction.holdId != null
+      ? [
+          {
+            field: 48,
+            value: Buffer.from(transaction.holdId, 'ascii'),
+          },
+        ]
+      : [];
+
+  return [...baseFields, ...maybeHoldId, ...extraFields];
 };
 
 const resolveProcessingCode = (transaction: Transaction, fallback: string): string =>
