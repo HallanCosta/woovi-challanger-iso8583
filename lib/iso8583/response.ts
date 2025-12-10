@@ -80,8 +80,8 @@ export const buildIso8583Response = ({
 };
 
 export function getResponseMti({ requestMti, fallback }: ResponseMtiParams): string {
-  if (requestMti === '0100') return '0110';
-  if (requestMti === '0200') return '0210';
+  if (requestMti === '0100') return '0210';
+  if (requestMti === '0200') return '0220';
   if (requestMti === '0400') return '0410';
   if (requestMti === '0800') return '0810';
 

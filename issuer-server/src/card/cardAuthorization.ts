@@ -27,8 +27,6 @@ export const authorizeCard = async ({ iso }: { iso: ParsedIso8583Message }): Pro
     rc = ISO8583_RESPONSE_CODES_NAMES.INVALID_TRANSACTION;
   }
 
-  console.log(`[ISSUER][CARD->AUTHORIZATION] PAN=${pan} rc=${rc}`);
-
   const responseMti = getResponseMti({ requestMti: iso.mti });
   const response = buildIso8583Response({
     parsed: iso,
@@ -36,6 +34,8 @@ export const authorizeCard = async ({ iso }: { iso: ParsedIso8583Message }): Pro
     rc,
     tpdu: TPDU_RESPONSE
   });
+
+  console.log(`[ISSUER][CARD->AUTHORIZATION] PAN=${pan} rc=${rc} MTI=${responseMti}`);
 
   return {
     rc,

@@ -8,13 +8,8 @@
     "start": "node --no-warnings --experimental-strip-types --env-file .env src/server.ts",
     "type-check": "tsc --noEmit",
     "list:cards": "node --experimental-strip-types --env-file .env scripts/listCards.ts",
-    "list:banks": "node --experimental-strip-types --env-file .env scripts/listBanks.ts",
-    "list:users": "node --experimental-strip-types --env-file .env scripts/listUsers.ts",
     "list:accounts": "node --experimental-strip-types --env-file .env scripts/listAccounts.ts",
-    "accounts:balances": "node --experimental-strip-types --env-file .env scripts/listBalances.ts",
-    "accounts:create": "node --experimental-strip-types --env-file .env scripts/createAccounts.ts",
-    "accounts:fund": "node --experimental-strip-types --env-file .env scripts/fundAccounts.ts",
-    "accounts:reset": "node --experimental-strip-types --env-file .env scripts/reset.ts",
+    "create:accounts": "node --experimental-strip-types --env-file .env scripts/createAccounts.ts",
     "reset": "node --experimental-strip-types --env-file .env scripts/reset.ts"
   },
   "dependencies": {

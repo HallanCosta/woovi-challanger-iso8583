@@ -13,6 +13,29 @@ Processing Pix and Card transactions using ISO8583:<br>
 
 NOTE: Frontend only tests transactions with prefix 3907 simulating a PIX flag, but it's possible to test other flags by activating the feature flag in the frontend
 
+## 🪢 Authorization + Capture flow (Acquirer ↔ Issuer)
+```
+┌───────────┐                                 ┌───────────┐
+│ Acquirer  │ --(0100 Authorization Request)-> │  Issuer   │
+└───────────┘                                 └───────────┘
+                    ↑                      │
+                    │                      └--(0210 Authorization Response)──┐
+                    │                                                         │
+                    └─────────────────────────────── Approved ───────────────┘
+
+
+        (Minutes, seconds, or even days later — depends on the operation)
+
+
+┌───────────┐                                 ┌───────────┐
+│ Acquirer  │ --(0200 Financial/Capture Req)->│  Issuer   │
+└───────────┘                                 └───────────┘
+                    ↑                      │
+                    │                      └─(0210/0220/0230 Financial Resp)─┐
+                    │                                                         │
+                    └────────────────────────── Settlement/Clearing ──────────┘
+```
+
 ## ☁️ Live Demo
 - **Production (Web Tester):** https://iso8583.hallancosta.com (ON) 🟢
 - **Production (Server):** https://server-iso8583.hallancosta.com (ON) 🟢
@@ -36,6 +59,7 @@ NOTE: Frontend only tests transactions with prefix 3907 simulating a PIX flag, b
 ### Server
 - **Node.js**
 - **Koa.js** - HTTP server
+- **TigerBeetle** - Ledger de alta performance para contas/transfers
 
 ### ISO 8583 Simulator
 - **Python**

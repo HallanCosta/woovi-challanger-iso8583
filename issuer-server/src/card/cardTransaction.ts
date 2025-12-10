@@ -47,12 +47,12 @@ export const createCardTransaction = async ({ iso }: CreateCardTransaction): Pro
   });
   const rc = entry.rc;
 
-  console.log(
-    `[ISSUER][CARD->TRANSACTION] PAN=${pan} debit=${card.accountId} credit=${CLEARING.id} amount=${amount.toString()} rc=${rc}`
-  );
-
-  const responseMti = getResponseMti({ requestMti: iso.mti, fallback: '0210' });
+  const responseMti = getResponseMti({ requestMti: iso.mti });
   const response = buildIso8583Response({ parsed: iso, mti: responseMti, rc, tpdu: TPDU_RESPONSE });
+
+  console.log(
+    `[ISSUER][CARD->TRANSACTION] PAN=${pan} debit=${card.accountId} credit=${CLEARING.id} amount=${amount.toString()} rc=${rc} MTI=${responseMti}`
+  );
 
   return {
     rc,

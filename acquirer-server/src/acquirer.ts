@@ -194,6 +194,9 @@ const processTransaction = async (transaction: Transaction): Promise<any> => {
       transaction.holdId = auth.holdId;
     }
 
+    // Simula liquidação posterior: espera 5s antes da captura (0200).
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
     const sale = await sendAndParse('sale');
 
     if (!sale.isApproved) {
