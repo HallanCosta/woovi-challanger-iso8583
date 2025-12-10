@@ -1,7 +1,7 @@
 import { CreateTransferError } from 'tigerbeetle-node';
 import { getTbClient } from '../tigerbeetle/tbClient.ts';
-import { newId } from '../utils/id.ts';
-import { ISO8583_RESPONSE_CODES_NAMES } from '../../../lib/iso8583/responseCodes.ts';
+import { newId } from '../../utils/id.ts';
+import { ISO8583_RESPONSE_CODES_NAMES } from '../../../../lib/iso8583/responseCodes.ts';
 
 type CreateLedgerEntryResponse = {
   rc: string;

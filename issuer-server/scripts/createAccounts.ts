@@ -1,5 +1,5 @@
-import { seedCreateAccounts } from '../src/account/createAccounts.ts';
-import { closeTbClient } from '../src/tigerbeetle/tbClient.ts';
+import { seedCreateAccounts } from '../src/modules/account/createAccounts.ts';
+import { closeTbClient } from '../src/modules/tigerbeetle/tbClient.ts';
 
 async function main() {
   await seedCreateAccounts();
@@ -7,4 +7,4 @@ async function main() {
   console.log('Contas básicas criadas/asseguradas no TigerBeetle.');
 }
 
-main()
+main();

@@ -1,7 +1,7 @@
 import { CreateAccountError } from 'tigerbeetle-node';
 import { ACCOUNTS, CLEARING, type Account } from './accounts.ts';
 import { getTbClient } from '../tigerbeetle/tbClient.ts';
-import { newId } from '../utils/id.ts';
+import { newId } from '../../utils/id.ts';
 
 type TbAccount = {
   id: bigint;
@@ -58,7 +58,7 @@ const buildClearingAccount = (): TbAccount => ({
   timestamp: 0n,
 });
 
-const seedInitialAccounts = (): TbAccount[] => {
+const buildCoreAccounts = (): TbAccount[] => {
   const accounts: TbAccount[] = [];
 
   ACCOUNTS.forEach((account) => {
@@ -126,7 +126,7 @@ const seedInitialBalances = async (userIds: bigint[]): Promise<void> => {
 };
 
 export const seedCreateAccounts = async (): Promise<void> => {
-  const accounts = seedInitialAccounts();
+  const accounts = buildCoreAccounts();
   await persistAccounts(accounts);
 
   // Seed initial balance for users.

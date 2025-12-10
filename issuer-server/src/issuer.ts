@@ -9,9 +9,9 @@ import { MTI } from '../../lib/iso8583/mti.ts';
 import { logMessage } from './utils/logs.ts';
 import { TPDU_RESPONSE } from './utils/tpdu.ts';
 
-import { authorizeCard } from './card/cardAuthorization.ts';
-import { createCardTransaction } from './card/cardTransaction.ts';
-import { findCard } from './card/cardHelpers.ts';
+import { authorizeCard } from './modules/card/cardAuthorization.ts';
+import { createCardTransaction } from './modules/card/cardTransaction.ts';
+import { findCard } from './modules/card/cardHelpers.ts';
 
 export type ProcessMessageInput = {
   socket: Socket;
@@ -47,7 +47,7 @@ export async function processMessageTb({ socket, message, clientLabel }: Process
 //   const parsedMessage = parseIso8583IncomingMessage({ message });
 //   const cardNumber = parsedMessage.iso.fields.get(2)?.value ?? '';
 //   const mti = parsedMessage.iso.mti;
-
+//
 //   if (!findCard(cardNumber)) {
 //     const response = buildIso8583Response({
 //       parsed: parsedMessage.iso,
@@ -55,7 +55,7 @@ export async function processMessageTb({ socket, message, clientLabel }: Process
 //       rc: ISO8583_RESPONSE_CODES_NAMES.INVALID_CARD,
 //       tpdu: TPDU_RESPONSE
 //     });
-
+//
 //     // Log the response message
 //     logMessage({
 //       message,
@@ -66,18 +66,18 @@ export async function processMessageTb({ socket, message, clientLabel }: Process
 //       mliHex: response.mliHex,
 //       buffer: response.buffer,
 //     });
-
+//
 //     socket.write(response.buffer);
 //     return;
 //   }
-
+//
 //   const response = buildIso8583Response({
 //     parsed: parsedMessage.iso,
 //     mti: getResponseMti({ requestMti: mti }),
 //     rc: ISO8583_RESPONSE_CODES_NAMES.APPROVED,
 //     tpdu: TPDU_RESPONSE
 //   });
-
+//
 //   // Log the response message
 //   logMessage({
 //     message,
@@ -88,6 +88,6 @@ export async function processMessageTb({ socket, message, clientLabel }: Process
 //     mliHex: response.mliHex,
 //     buffer: response.buffer,
 //   });
-
+//
 //   socket.write(response.buffer);
 // };

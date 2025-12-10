@@ -1,6 +1,6 @@
-import { ACCOUNTS, CLEARING } from '../src/account/accounts.ts';
-import { getAccounts } from '../src/account/accountList.ts';
-import { closeTbClient } from '../src/tigerbeetle/tbClient.ts';
+import { ACCOUNTS, CLEARING } from '../src/modules/account/accounts.ts';
+import { getAccounts } from '../src/modules/account/accountList.ts';
+import { closeTbClient } from '../src/modules/tigerbeetle/tbClient.ts';
 
 type WithBalance = {
   accountId: string;
@@ -12,8 +12,6 @@ type WithBalance = {
 };
 
 async function main() {
-  const tb = getTbClient();
-
   const metas = [
     ...ACCOUNTS.map((account) => ({ id: account.id, name: account.name, type: 'user' })),
     { id: CLEARING.id, name: CLEARING.name, type: 'clearing' },
@@ -46,4 +44,4 @@ async function main() {
   await closeTbClient();
 }
 
-main()
+main();

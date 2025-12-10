@@ -1,4 +1,4 @@
-import { CARDS } from '../src/card/cards.ts';
+import { CARDS } from '../src/modules/card/cards.ts';
 
 const rows = CARDS.map((card) => ({
   pan: card.pan,
