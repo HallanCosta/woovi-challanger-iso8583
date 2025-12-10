@@ -4,40 +4,22 @@ export type Card = {
   pan: string;
   expiry: string; // YYMM
   accountId: bigint;
-  merchantAccountId: bigint;
-  bank: 'HallanBank';
 };
 
 const DEFAULT_EXPIRY = '2812';
+export const CARD_BINS = ['5162', '4026', '3907'] as const;
+
+const [hallan1, hallan2] = ACCOUNTS;
 
 export const CARDS: Card[] = [
   {
     pan: '5162000000000000',
     expiry: DEFAULT_EXPIRY,
-    accountId: ACCOUNTS.hallanUser1,
-    merchantAccountId: ACCOUNTS.hallanMerchant,
-    bank: 'HallanBank',
+    accountId: hallan1.id,
   },
   {
     pan: '4026000000000000',
     expiry: DEFAULT_EXPIRY,
-    accountId: ACCOUNTS.hallanUser2,
-    merchantAccountId: ACCOUNTS.hallanMerchant,
-    bank: 'HallanBank',
+    accountId: hallan2.id,
   },
-  // Woovi cards commented out to keep issuer focused on Hallan only.
-  // {
-  //   pan: '2306000000000000',
-  //   expiry: DEFAULT_EXPIRY,
-  //   accountId: ACCOUNTS.wooviUser1,
-  //   merchantAccountId: ACCOUNTS.wooviMerchant,
-  //   bank: 'Woovi',
-  // },
-  // {
-  //   pan: '4815000000000000',
-  //   expiry: DEFAULT_EXPIRY,
-  //   accountId: ACCOUNTS.wooviUser2,
-  //   merchantAccountId: ACCOUNTS.wooviMerchant,
-  //   bank: 'Woovi',
-  // },
 ];

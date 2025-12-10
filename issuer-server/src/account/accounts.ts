@@ -1,9 +1,17 @@
-export const ACCOUNTS = {
-  hallanUser1: 1001n,
-  hallanUser2: 1002n,
-  wooviUser1: 1101n,
-  wooviUser2: 1102n,
-  hallanMerchant: 2001n,
-  wooviMerchant: 2101n,
-  clearing: 9001n,
-} as const;
+export type Account = {
+  id: bigint;
+  name: string;
+};
+
+export const ACCOUNTS: Account[] = [
+  {
+    id: 1001n,
+    name: 'Hallan 1',
+  },
+  {
+    id: 1002n,
+    name: 'Hallan 2',
+  },
+];
+
+export const CLEARING = { id: 9001n, name: 'Demo Clearing' };

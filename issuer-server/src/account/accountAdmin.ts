@@ -1,12 +1,10 @@
-import { ACCOUNTS } from './accounts.ts';
 import { getTbClient } from '../tigerbeetle/tbClient.ts';
-import { BANKS, CLEARING } from '../bank/banks.ts';
+import { ACCOUNTS, CLEARING } from './accounts.ts';
 import { newId } from '../utils/id.ts';
 
 const ALL_ACCOUNT_IDS = [
-  ...BANKS.flatMap((b) => b.users.map((u) => u.accountId)),
-  ...BANKS.map((b) => b.merchant.accountId),
-  CLEARING.accountId,
+  ...ACCOUNTS.map((a) => a.id),
+  CLEARING.id,
 ];
 
 const FUND_AMOUNT = 1_000_000n; // 10.000,00 em centavos
@@ -30,8 +28,8 @@ export const zeroOutAccounts = async (): Promise<void> => {
     const net = acc.credits_posted - acc.debits_posted;
     if (net === 0n) return [];
     const amount = net < 0n ? -net : net;
-    const debit_account_id = net > 0n ? acc.id : CLEARING.accountId;
-    const credit_account_id = net > 0n ? CLEARING.accountId : acc.id;
+    const debit_account_id = net > 0n ? acc.id : CLEARING.id;
+    const credit_account_id = net > 0n ? CLEARING.id : acc.id;
     return [
       {
         id: newId(),
@@ -61,11 +59,11 @@ export const zeroOutAccounts = async (): Promise<void> => {
 
 export const fundUserAccounts = async (): Promise<void> => {
   const tb = getTbClient();
-  const userAccounts = BANKS.flatMap((b) => b.users.map((u) => u.accountId));
+  const userAccounts = ACCOUNTS.map((a) => a.id);
 
   const transfers = userAccounts.map((accountId) => ({
     id: newId(),
-    debit_account_id: CLEARING.accountId,
+    debit_account_id: CLEARING.id,
     credit_account_id: accountId,
     amount: FUND_AMOUNT,
     pending_id: 0n,

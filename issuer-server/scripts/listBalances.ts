@@ -1,4 +1,4 @@
-import { BANKS, CLEARING } from '../src/bank/banks.ts';
+import { ACCOUNTS, CLEARING } from '../src/account/accounts.ts';
 import { getTbClient, closeTbClient } from '../src/tigerbeetle/tbClient.ts';
 
 type Meta = {
@@ -9,16 +9,8 @@ type Meta = {
 };
 
 const metas: Meta[] = [
-  ...BANKS.flatMap((bank) =>
-    bank.users.map((user) => ({ id: user.accountId, bank: bank.name, type: 'user', name: user.name }))
-  ),
-  ...BANKS.map((bank) => ({
-    id: bank.merchant.accountId,
-    bank: bank.name,
-    type: 'merchant',
-    name: bank.merchant.name,
-  })),
-  { id: CLEARING.accountId, bank: '-', type: 'clearing', name: CLEARING.name },
+  ...ACCOUNTS.map((account) => ({ id: account.id, bank: 'Hallan', type: 'user', name: account.name })),
+  { id: CLEARING.id, bank: '-', type: 'clearing', name: CLEARING.name },
 ];
 
 async function main() {

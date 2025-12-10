@@ -1,10 +1,12 @@
-import { BANKS, CLEARING } from '../src/data/banks.ts';
+import { ACCOUNTS, CLEARING } from '../src/account/accounts.ts';
+import { CARD_BINS } from '../src/card/cards.ts';
 
-const rows = BANKS.map((bank) => ({
-  bank: bank.name,
-  users: bank.users.map((u) => u.name).join(', '),
-  merchant: `${bank.merchant.name} (${bank.merchant.accountId.toString()})`,
+console.log('Bins:', CARD_BINS.join(', '));
+
+const rows = ACCOUNTS.map((account) => ({
+  name: account.name,
+  accountId: account.id.toString(),
 }));
 
 console.table(rows);
-console.log('\nClearing:', `${CLEARING.name} (${CLEARING.accountId.toString()})`);
+console.log('\nClearing:', `${CLEARING.name} (${CLEARING.id.toString()})`);

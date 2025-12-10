@@ -9,13 +9,13 @@ type CreateLedgerEntryResponse = {
 
 type CreateLedgerEntryParams = {
   debitAccountId: bigint;
-  merchantAccountId: bigint;
+  creditAccountId: bigint;
   amount: bigint;
 };
 
 export const createLedgerEntry = async ({
   debitAccountId,
-  merchantAccountId,
+  creditAccountId,
   amount
 }: CreateLedgerEntryParams): Promise<CreateLedgerEntryResponse> => {
   const transferId = newId();
@@ -26,7 +26,7 @@ export const createLedgerEntry = async ({
       {
         id: transferId,
         debit_account_id: debitAccountId,
-        credit_account_id: merchantAccountId,
+        credit_account_id: creditAccountId,
         amount,
         pending_id: 0n,
         user_data_128: 0n,

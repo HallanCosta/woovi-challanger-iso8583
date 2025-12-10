@@ -1,7 +1,6 @@
 import { CreateAccountError } from 'tigerbeetle-node';
-import { ACCOUNTS } from './accounts.ts';
+import { ACCOUNTS, CLEARING, type Account } from './accounts.ts';
 import { getTbClient } from '../tigerbeetle/tbClient.ts';
-import { BANKS, CLEARING, type Bank, type BankUser } from '../bank/banks.ts';
 
 type TbAccount = {
   id: bigint;
@@ -25,9 +24,9 @@ const toUserData128 = (label: string): bigint => {
   return BigInt(`0x${buf.toString('hex')}`);
 };
 
-const buildUserAccount = (user: BankUser): TbAccount => ({
-  id: user.accountId,
-  user_data_128: toUserData128(user.name),
+const buildUserAccount = (account: Account): TbAccount => ({
+  id: account.id,
+  user_data_128: toUserData128(account.name),
   user_data_64: 0n,
   user_data_32: 0,
   reserved: 0,
@@ -41,25 +40,9 @@ const buildUserAccount = (user: BankUser): TbAccount => ({
   timestamp: 0n,
 });
 
-const buildMerchantAccount = (bank: Bank): TbAccount => ({
-  id: bank.merchant.accountId,
-  user_data_128: toUserData128(bank.merchant.name),
-  user_data_64: 0n,
-  user_data_32: 0,
-  reserved: 0,
-  code: 2,
-  ledger: 1,
-  flags: 0,
-  debits_pending: 0n,
-  debits_posted: 0n,
-  credits_pending: 0n,
-  credits_posted: 0n,
-  timestamp: 0n,
-});
-
 // Conta de clearing funciona como caixa central para zerar e abastecer saldos.
 const buildClearingAccount = (): TbAccount => ({
-  id: CLEARING.accountId,
+  id: CLEARING.id,
   user_data_128: toUserData128(CLEARING.name),
   user_data_64: 0n,
   user_data_32: 0,
@@ -77,9 +60,8 @@ const buildClearingAccount = (): TbAccount => ({
 const buildCoreAccounts = (): TbAccount[] => {
   const accounts: TbAccount[] = [];
 
-  BANKS.forEach((bank) => {
-    bank.users.forEach((user) => accounts.push(buildUserAccount(user)));
-    accounts.push(buildMerchantAccount(bank));
+  ACCOUNTS.forEach((account) => {
+    accounts.push(buildUserAccount(account));
   });
 
   accounts.push(buildClearingAccount());

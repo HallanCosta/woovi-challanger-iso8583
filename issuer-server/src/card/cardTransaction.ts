@@ -6,6 +6,7 @@ import { ISO8583_RESPONSE_CODES_NAMES } from '../../../lib/iso8583/responseCodes
 import { createLedgerEntry } from '../ledger/ledgerTransaction.ts';
 
 import { findCard } from '../card/cardHelpers.ts';
+import { CLEARING } from '../account/accounts.ts';
 
 import { TPDU_RESPONSE } from '../utils/tpdu.ts';
 
@@ -41,13 +42,13 @@ export const createCardTransaction = async ({ iso }: CreateCardTransaction): Pro
 
   const entry = await createLedgerEntry({
     debitAccountId: card.accountId,
-    merchantAccountId: card.merchantAccountId,
+    creditAccountId: CLEARING.id,
     amount
   });
   const rc = entry.rc;
 
   console.log(
-    `[ISSUER][CARD->TRANSACTION] PAN=${pan} debit=${card.accountId} merchant=${card.merchantAccountId} amount=${amount.toString()} rc=${rc}`
+    `[ISSUER][CARD->TRANSACTION] PAN=${pan} debit=${card.accountId} credit=${CLEARING.id} amount=${amount.toString()} rc=${rc}`
   );
 
   const responseMti = getResponseMti({ requestMti: iso.mti, fallback: '0210' });
