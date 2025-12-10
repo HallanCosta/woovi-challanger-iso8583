@@ -1,4 +1,4 @@
-import { encodeBitmap, type ParsedIsoMessage, type ParsedIso8583Field } from './parser.ts';
+import { encodeBitmap, type ParsedIso8583Message, type ParsedIso8583Field } from './parser.ts';
 import { encodeField } from './encoder.ts';
 import ISO8583_FIELD_FORMATS from './formats.ts';
 import { strToBCD } from './utils.ts';
@@ -16,7 +16,7 @@ export type BuildIso8583ResponseResult = {
 };
 
 export type BuildIso8583ResponseInput = {
-  parsed: ParsedIsoMessage;
+  parsed: ParsedIso8583Message;
   mti: string;
   rc: string;
   tpdu: Buffer;

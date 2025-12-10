@@ -1,11 +1,11 @@
 import { formatType } from '../../../lib/iso8583/fieldFormat.ts';
-import { type ParsedIsoMessage, type ParsedIso8583Field } from '../../../lib/iso8583/parser.ts';
+import { type ParsedIso8583Message, type ParsedIso8583Field } from '../../../lib/iso8583/parser.ts';
 import { getResponseMti } from '../../../lib/iso8583/response.ts';
 import ISO8583_FIELD_FORMATS from '../../../lib/iso8583/formats.ts';
 
 type LogMessageInput = {
   message: Buffer;
-  parsed: ParsedIsoMessage;
+  parsed: ParsedIso8583Message;
   fields: ParsedIso8583Field[];
   rc: string;
   mliDec: number;

@@ -11,7 +11,7 @@ export type ParsedIso8583Field = {
   endOffset: number;
 };
 
-export type ParsedIsoMessage = {
+export type ParsedIso8583Message = {
   mti: string;
   bitmap: Buffer;
   bits: number[];
@@ -68,7 +68,7 @@ export function encodeBitmap(fields: number[]): Buffer {
 // Message parsing
 // ---------------------------------------------------------------------------
 
-export function parseIsoMessage(buffer: Buffer): ParsedIsoMessage {
+export function parseIsoMessage(buffer: Buffer): ParsedIso8583Message {
   let offset = 0;
   const mti = bcdToStr(buffer.subarray(offset, offset + 2), 4);
   offset += 2;
@@ -123,7 +123,7 @@ export function parseIsoFromBuffer(buffer: Buffer): Record<string, any> {
 // Incoming message helpers
 // ---------------------------------------------------------------------------
 
-export type ParsedIncomingMessage = { tpdu: Buffer; iso: ParsedIsoMessage };
+export type ParsedIncomingMessage = { tpdu: Buffer; iso: ParsedIso8583Message };
 export type ParseIso8583IncomingParams = { message: Buffer };
 
 /**

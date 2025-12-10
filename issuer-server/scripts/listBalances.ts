@@ -1,7 +1,12 @@
 import { BANKS, CLEARING } from '../src/bank/banks.ts';
 import { getTbClient, closeTbClient } from '../src/tigerbeetle/tbClient.ts';
 
-type Meta = { id: bigint; bank: string; type: string; name: string };
+type Meta = {
+  id: bigint;
+  bank: string;
+  type: string;
+  name: string
+};
 
 const metas: Meta[] = [
   ...BANKS.flatMap((bank) =>
@@ -47,7 +52,4 @@ async function main() {
   await closeTbClient();
 }
 
-main().catch((err) => {
-  console.error(err);
-  throw err;
-});
+main()

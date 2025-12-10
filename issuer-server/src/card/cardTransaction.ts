@@ -1,20 +1,24 @@
-import type { ParsedIsoMessage } from '../../../lib/iso8583/parser.ts';
+import type { ParsedIso8583Message } from '../../../lib/iso8583/parser.ts';
 import { getResponseMti } from '../../../lib/iso8583/response.ts';
 import { buildIso8583Response } from '../../../lib/iso8583/response.ts';
 import { ISO8583_RESPONSE_CODES_NAMES } from '../../../lib/iso8583/responseCodes.ts';
 
 import { createLedgerEntry } from '../ledger/ledgerTransaction.ts';
 
-import { TPDU_RESPONSE } from '../utils/tpdu.ts';
-import { findCard } from '../utils/cards.ts';
+import { findCard } from '../card/cardHelpers.ts';
 
-import type { CaptureResult } from './cardTypes.ts';
+import { TPDU_RESPONSE } from '../utils/tpdu.ts';
 
 type CreateCardTransaction = {
-  iso: ParsedIsoMessage;
+  iso: ParsedIso8583Message;
 };
 
-export const createCardTransaction = async ({ iso }: CreateCardTransaction): Promise<CaptureResult> => {
+export type CreateCardTransactionResponse = {
+  rc: string;
+  buffer: Buffer;
+};
+
+export const createCardTransaction = async ({ iso }: CreateCardTransaction): Promise<CreateCardTransactionResponse> => {
   const pan = iso.fields.get(2)?.value ?? '';
   const amountStr = iso.fields.get(4)?.value ?? '0';
   const amount = BigInt(amountStr);
@@ -35,7 +39,11 @@ export const createCardTransaction = async ({ iso }: CreateCardTransaction): Pro
     };
   }
 
-  const entry = await createLedgerEntry(card.accountId, card.merchantAccountId, amount);
+  const entry = await createLedgerEntry({
+    debitAccountId: card.accountId,
+    merchantAccountId: card.merchantAccountId,
+    amount
+  });
   const rc = entry.rc;
 
   console.log(

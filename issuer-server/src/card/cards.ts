@@ -10,7 +10,7 @@ export type Card = {
 
 const DEFAULT_EXPIRY = '2812';
 
-export const ISSUED_CARDS: Card[] = [
+export const CARDS: Card[] = [
   {
     pan: '5162000000000000',
     expiry: DEFAULT_EXPIRY,

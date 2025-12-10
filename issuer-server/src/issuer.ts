@@ -8,10 +8,10 @@ import { MTI } from '../../lib/iso8583/mti.ts';
 
 import { logMessage } from './utils/logs.ts';
 import { TPDU_RESPONSE } from './utils/tpdu.ts';
-import { findCard } from './utils/cards.ts';
 
 import { authorizeCard } from './card/cardAuthorization.ts';
 import { createCardTransaction } from './card/cardTransaction.ts';
+import { findCard } from './card/cardHelpers.ts';
 
 export type ProcessMessageInput = {
   socket: Socket;
@@ -43,51 +43,51 @@ export async function processMessageTb({ socket, message, clientLabel }: Process
 }
 
 // Alternative entry point mirroring processMessageTb to simulation.
-export const processMessage = ({ socket, message, clientLabel }: ProcessMessageInput) => {
-  const parsedMessage = parseIso8583IncomingMessage({ message });
-  const cardNumber = parsedMessage.iso.fields.get(2)?.value ?? '';
-  const mti = parsedMessage.iso.mti;
+// export const processMessage = ({ socket, message, clientLabel }: ProcessMessageInput) => {
+//   const parsedMessage = parseIso8583IncomingMessage({ message });
+//   const cardNumber = parsedMessage.iso.fields.get(2)?.value ?? '';
+//   const mti = parsedMessage.iso.mti;
 
-  if (!findCard(cardNumber)) {
-    const response = buildIso8583Response({
-      parsed: parsedMessage.iso,
-      mti: getResponseMti({ requestMti: mti }),
-      rc: ISO8583_RESPONSE_CODES_NAMES.INVALID_CARD,
-      tpdu: TPDU_RESPONSE
-    });
+//   if (!findCard(cardNumber)) {
+//     const response = buildIso8583Response({
+//       parsed: parsedMessage.iso,
+//       mti: getResponseMti({ requestMti: mti }),
+//       rc: ISO8583_RESPONSE_CODES_NAMES.INVALID_CARD,
+//       tpdu: TPDU_RESPONSE
+//     });
 
-    // Log the response message
-    logMessage({
-      message,
-      parsed: parsedMessage.iso,
-      fields: response.fields,
-      rc: ISO8583_RESPONSE_CODES_NAMES.INVALID_CARD,
-      mliDec: response.mliDec,
-      mliHex: response.mliHex,
-      buffer: response.buffer,
-    });
+//     // Log the response message
+//     logMessage({
+//       message,
+//       parsed: parsedMessage.iso,
+//       fields: response.fields,
+//       rc: ISO8583_RESPONSE_CODES_NAMES.INVALID_CARD,
+//       mliDec: response.mliDec,
+//       mliHex: response.mliHex,
+//       buffer: response.buffer,
+//     });
 
-    socket.write(response.buffer);
-    return;
-  }
+//     socket.write(response.buffer);
+//     return;
+//   }
 
-  const response = buildIso8583Response({
-    parsed: parsedMessage.iso,
-    mti: getResponseMti({ requestMti: mti }),
-    rc: ISO8583_RESPONSE_CODES_NAMES.APPROVED,
-    tpdu: TPDU_RESPONSE
-  });
+//   const response = buildIso8583Response({
+//     parsed: parsedMessage.iso,
+//     mti: getResponseMti({ requestMti: mti }),
+//     rc: ISO8583_RESPONSE_CODES_NAMES.APPROVED,
+//     tpdu: TPDU_RESPONSE
+//   });
 
-  // Log the response message
-  logMessage({
-    message,
-    parsed: parsedMessage.iso,
-    fields: response.fields,
-    rc: ISO8583_RESPONSE_CODES_NAMES.APPROVED,
-    mliDec: response.mliDec,
-    mliHex: response.mliHex,
-    buffer: response.buffer,
-  });
+//   // Log the response message
+//   logMessage({
+//     message,
+//     parsed: parsedMessage.iso,
+//     fields: response.fields,
+//     rc: ISO8583_RESPONSE_CODES_NAMES.APPROVED,
+//     mliDec: response.mliDec,
+//     mliHex: response.mliHex,
+//     buffer: response.buffer,
+//   });
 
-  socket.write(response.buffer);
-};
+//   socket.write(response.buffer);
+// };

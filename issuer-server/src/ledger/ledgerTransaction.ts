@@ -3,15 +3,21 @@ import { getTbClient } from '../tigerbeetle/tbClient.ts';
 import { newId } from '../utils/id.ts';
 import { ISO8583_RESPONSE_CODES_NAMES } from '../../../lib/iso8583/responseCodes.ts';
 
-export type CaptureResult = {
+type CreateLedgerEntryResponse = {
   rc: string;
 };
 
-export const createLedgerEntry = async (
-  debitAccountId: bigint,
-  merchantAccountId: bigint,
-  amount: bigint
-): Promise<CaptureResult> => {
+type CreateLedgerEntryParams = {
+  debitAccountId: bigint;
+  merchantAccountId: bigint;
+  amount: bigint;
+};
+
+export const createLedgerEntry = async ({
+  debitAccountId,
+  merchantAccountId,
+  amount
+}: CreateLedgerEntryParams): Promise<CreateLedgerEntryResponse> => {
   const transferId = newId();
   const tb = getTbClient();
 
@@ -36,22 +42,9 @@ export const createLedgerEntry = async (
 
     if (transfer_errors.length > 0) {
       for (const error of transfer_errors) {
-        const mapped = mapTbErrorToResponseCodeIso8583(error.result);
+        const responseCodeError = mapTbErrorToResponseCodeIso8583(error.result);
 
-        switch (error.result) {
-          case CreateTransferError.exists:
-            console.error(`Batch transfer at ${error.index} already exists.`);
-            break;
-          default:
-            console.error(
-              `Batch transfer at ${error.index} failed to create: ${
-                CreateTransferError[error.result]
-              }.`,
-            );
-        }
-
-        // Return on first error because we send a single transfer per batch.
-        return { rc: mapped };
+        return { rc: responseCodeError };
       }
     }
 
@@ -67,33 +60,32 @@ export const createLedgerEntry = async (
   }
 };
 
-const mapTbErrorToResponseCodeIso8583 = (errorResult: number): string => {
-  const FUND_ERRORS = new Set([
-    CreateTransferError.exceeds_pending_transfer_amount,
-    CreateTransferError.exceeds_credits,
-    CreateTransferError.exceeds_debits,
-  ]);
+const TB_ERROR_MAP: Record<string | number, string> = {
+  // Fund errors
+  exceeds_pending: ISO8583_RESPONSE_CODES_NAMES.NOT_SUFFICIENT_FUNDS,
+  exceeds_pending_transfer_amount: ISO8583_RESPONSE_CODES_NAMES.NOT_SUFFICIENT_FUNDS,
+  exceeds_credits: ISO8583_RESPONSE_CODES_NAMES.NOT_SUFFICIENT_FUNDS,
+  exceeds_debits: ISO8583_RESPONSE_CODES_NAMES.NOT_SUFFICIENT_FUNDS,
+  [CreateTransferError.exceeds_pending_transfer_amount]: ISO8583_RESPONSE_CODES_NAMES.NOT_SUFFICIENT_FUNDS,
+  [CreateTransferError.exceeds_credits]: ISO8583_RESPONSE_CODES_NAMES.NOT_SUFFICIENT_FUNDS,
+  [CreateTransferError.exceeds_debits]: ISO8583_RESPONSE_CODES_NAMES.NOT_SUFFICIENT_FUNDS,
 
-  const NOT_FOUND_OR_STRUCTURAL_ERRORS = new Set([
-    CreateTransferError.debit_account_not_found,
-    CreateTransferError.credit_account_not_found,
-    CreateTransferError.accounts_must_have_the_same_ledger,
-    CreateTransferError.transfer_must_have_the_same_ledger_as_accounts,
-    CreateTransferError.code_must_not_be_zero,
-  ]);
+  // Duplicate
+  exists: ISO8583_RESPONSE_CODES_NAMES.DUPLICATE_TRANSMISSION,
+  [CreateTransferError.exists]: ISO8583_RESPONSE_CODES_NAMES.DUPLICATE_TRANSMISSION,
 
-  if (FUND_ERRORS.has(errorResult)) {
-    return ISO8583_RESPONSE_CODES_NAMES.NOT_SUFFICIENT_FUNDS;
-  }
-
-  if (errorResult === CreateTransferError.exists) {
-    return ISO8583_RESPONSE_CODES_NAMES.DUPLICATE_TRANSMISSION;
-  }
-
-  if (NOT_FOUND_OR_STRUCTURAL_ERRORS.has(errorResult)) {
-    return ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE;
-  }
-
-  // fallback
-  return ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE;
+  // Not found / structural
+  debit_account_not_found: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,
+  credit_account_not_found: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,
+  accounts_must_have_the_same_ledger: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,
+  transfer_must_have_the_same_ledger_as_accounts: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,
+  code_must_not_be_zero: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,
+  [CreateTransferError.debit_account_not_found]: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,
+  [CreateTransferError.credit_account_not_found]: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,
+  [CreateTransferError.accounts_must_have_the_same_ledger]: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,
+  [CreateTransferError.transfer_must_have_the_same_ledger_as_accounts]: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,
+  [CreateTransferError.code_must_not_be_zero]: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,
 };
+
+const mapTbErrorToResponseCodeIso8583 = (errorResult: number | string): string =>
+  TB_ERROR_MAP[errorResult] ?? ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE;

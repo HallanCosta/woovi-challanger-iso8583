@@ -28,7 +28,4 @@ async function main() {
   console.log('Ledger resetado: contas recriadas e saldos iniciais restabelecidos.');
 }
 
-main().catch((err) => {
-  console.error('Falha ao resetar ledger e contas:', err);
-  throw err;
-});
+main()

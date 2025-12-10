@@ -1,5 +1,5 @@
 import { createTcpServer } from '../../lib/tcp/server.ts';
-import { processMessageTb, processMessage } from './issuer.ts';
+import { processMessageTb } from './issuer.ts';
 import { createTbClient } from './tigerbeetle/tbClient.ts';
 
 const PORT = Number(process.env.SERVER_PORT);

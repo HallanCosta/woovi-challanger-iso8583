@@ -4,7 +4,7 @@ import type { Socket } from 'node:net';
 import {
   encodeBitmap,
   parseIso8583IncomingMessage,
-  type ParsedIsoMessage,
+  type ParsedIso8583Message,
 } from '../../../lib/iso8583/parser.ts';
 import { getResponseMti } from '../../../lib/iso8583/response.ts';
 import { encodeField } from '../../../lib/iso8583/encoder.ts';
@@ -14,7 +14,7 @@ import { routePan } from '../connectorService.ts';
 import { TPDU_RESPONSE } from '../utils/tpdu.ts';
 
 // Build a 0210 response with RC 15 when no issuer/route is found.
-const buildRc15Response = (parsed: ParsedIsoMessage): Buffer => {
+const buildRc15Response = (parsed: ParsedIso8583Message): Buffer => {
   const fields = new Map(parsed.fields);
   fields.set(39, {
     field: 39,

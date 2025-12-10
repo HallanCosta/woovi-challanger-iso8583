@@ -1,4 +1,4 @@
-import { ISSUED_CARDS as CARDS } from '../src/data/cards.ts';
+import { CARDS } from '../src/card/cards.ts';
 
 const rows = CARDS.map((card) => ({
   pan: card.pan,

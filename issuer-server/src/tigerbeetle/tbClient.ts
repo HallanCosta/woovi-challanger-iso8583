@@ -1,9 +1,4 @@
-// Types from tigerbeetle-node are loose; use any to avoid compile friction in this demo.
-import { createClient, type CreateAccountsError, type CreateTransfersError } from 'tigerbeetle-node';
-
-export type TbResult<T extends CreateAccountsError | CreateTransfersError> = {
-  errors: T[];
-};
+import { createClient } from 'tigerbeetle-node';
 
 const TB_CLUSTER_ID = process.env.TB_CLUSTER_ID;
 const TB_ADDRESS = process.env.TB_ADDRESS;
@@ -34,8 +29,6 @@ export const getTbClient = (): any => {
 };
 
 export const closeTbClient = async () => {
-  if (client && typeof client.close === 'function') {
-    await client.close();
-    client = null;
-  }
+  console.log('[TB] Closing client');
+  process.exit()
 };
