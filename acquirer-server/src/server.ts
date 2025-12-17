@@ -1,8 +1,10 @@
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import cors from '@koa/cors';
+
 import router from './routes.ts';
-import { establishConnectionBrand } from './brandClient.ts';
+
+import { establishConnectionBrand } from './modules/brand/brandClient.ts';
 
 const app = new Koa();
 

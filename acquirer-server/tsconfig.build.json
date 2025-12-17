@@ -2,9 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "noEmit": false,
-    "allowImportingTsExtensions": false,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
     "composite": true
   },
-  "include": ["src"]
+  "include": ["src/**/*", "../lib/iso8583/**/*", "../lib/tcp/**/*"]
 }

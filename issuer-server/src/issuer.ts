@@ -13,14 +13,14 @@ import { authorizeCard } from './modules/card/cardAuthorization.ts';
 import { createCardTransaction } from './modules/card/cardTransaction.ts';
 import { findCard } from './modules/card/cardHelpers.ts';
 
-export type ProcessMessageInput = {
+export type IssuerMessageInput = {
   socket: Socket;
   message: Buffer;
   clientLabel: string;
 };
 
 // Process message to authorization and transaction
-export async function processMessageTb({ socket, message, clientLabel }: ProcessMessageInput): Promise<void> {
+export async function processMessageTb({ socket, message, clientLabel }: IssuerMessageInput): Promise<void> {
   const parsed = parseIso8583IncomingMessage({ message });
   const mti = parsed.iso.mti;
 
@@ -43,7 +43,7 @@ export async function processMessageTb({ socket, message, clientLabel }: Process
 }
 
 // Alternative entry point mirroring processMessageTb to simulation.
-// export const processMessage = ({ socket, message, clientLabel }: ProcessMessageInput) => {
+// export const processMessage = ({ socket, message, clientLabel }: IssuerMessageInput) => {
 //   const parsedMessage = parseIso8583IncomingMessage({ message });
 //   const cardNumber = parsedMessage.iso.fields.get(2)?.value ?? '';
 //   const mti = parsedMessage.iso.mti;

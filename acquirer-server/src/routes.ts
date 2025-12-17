@@ -1,6 +1,7 @@
 import Router from '@koa/router';
-import acquirer from './acquirer.ts';
-import type { Transaction } from './types.ts';
+
+import { acquirer } from './acquirer.ts';
+import type { Transaction } from './modules/card/cardTransaction.ts';
 
 const router = new Router();
 
@@ -18,7 +19,7 @@ router.post('/transaction', async (ctx) => {
   }
 
   try {
-    const result = await acquirer(transaction);
+    const result = await acquirer({ transaction });
     ctx.body = result;
   } catch (error) {
     ctx.status = 500;

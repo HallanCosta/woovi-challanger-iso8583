@@ -1,5 +1,5 @@
-import acquirer from '../src/acquirer.ts';
-import { closeBrandConnection } from '../src/brandClient.ts';
+import { acquirer } from '../src/acquirer.ts';
+import { closeBrandConnection } from '../src/modules/brand/brandClient.ts';
 
 const transaction = {
   amount: '000000005214',                  // Amount in cents
@@ -12,6 +12,6 @@ const transaction = {
 
 // Execute test request success sale
 (async function() {
-  await acquirer(transaction);
+  await acquirer({ transaction });
   closeBrandConnection()
 })()

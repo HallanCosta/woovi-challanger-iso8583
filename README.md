@@ -4,6 +4,13 @@
 
 <hr>
 
+## ☁️ Live Demo
+- **Production (Web Tester):** https://iso8583.hallancosta.com (ON) 🟢
+- **Production (Server):** https://server-iso8583.hallancosta.com (ON) 🟢
+
+## 📸 Preview
+<img src="https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/web/screenshots/transaction-approved.png?raw=true">
+
 ISO 8583 transaction simulator with Acquirer that connects to an Issuer.
 
 Processing Pix and Card transactions using ISO8583:<br>
@@ -13,35 +20,40 @@ Processing Pix and Card transactions using ISO8583:<br>
 
 NOTE: Frontend only tests transactions with prefix 3907 simulating a PIX flag, but it's possible to test other flags by activating the feature flag in the frontend
 
-## 🪢 Authorization + Capture flow (Acquirer ↔ Issuer)
+### Why 000000 and 900000?
+We reuse the standard purchase code `000000` for normal card brands and reserve `900000` as a PIX flag. That split lets the simulator route flows differently (card vs. PIX) without inventing new MTIs or changing the ISO field mapping.
+
+## 🪢 Authorization + Capture flow (Acquirer ↔ Brand ↔ Issuer)
+*Brand examples: Mastercard, Visa, Elo — routing based on PAN prefix to the right issuer/simulator.*
 ```
-┌───────────┐                                 ┌───────────┐
-│ Acquirer  │ --(0100 Authorization Request)-> │  Issuer   │
-└───────────┘                                 └───────────┘
-                    ↑                      │
-                    │                      └--(0210 Authorization Response)──┐
-                    │                                                         │
-                    └─────────────────────────────── Approved ───────────────┘
+┌───────────┐        ┌────────────┐        ┌───────────┐
+│ Acquirer  │ -----> │   Brand    │ -----> │  Issuer   │
+│           │ 0100   │ (Visa/Mc)  │ 0100   │           │
+└───────────┘        └────────────┘        └───────────┘
+       ▲                      │                     │
+       │                      │                     └──(0110 Auth Response)
+       │                      │                             Approved / Declined
+       │                      ▼
+       │               (0110 Auth Response)
+       │
+       └────────────── Authorization Result ──────────────┘
 
 
-        (Minutes, seconds, or even days later — depends on the operation)
+     (Minutes, seconds, or even days later — depends on the operation)
 
 
-┌───────────┐                                 ┌───────────┐
-│ Acquirer  │ --(0200 Financial/Capture Req)->│  Issuer   │
-└───────────┘                                 └───────────┘
-                    ↑                      │
-                    │                      └─(0210/0220/0230 Financial Resp)─┐
-                    │                                                         │
-                    └────────────────────────── Settlement/Clearing ──────────┘
+┌───────────┐        ┌────────────┐        ┌───────────┐
+│ Acquirer  │ -----> │   Brand    │ -----> │  Issuer   │
+│           │ 0200   │ (Visa/Mc)  │ 0200   │           │
+└───────────┘        └────────────┘        └───────────┘
+       ▲                      │                     │
+       │                      │                     └──(0210/0220 Financial Resp)
+       │                      │                             Approved / Error
+       │                      ▼
+       │               (0210/0220 Financial Resp)
+       │
+       └────────── Clearing & Settlement (Brand) ──────────┘
 ```
-
-## ☁️ Live Demo
-- **Production (Web Tester):** https://iso8583.hallancosta.com (ON) 🟢
-- **Production (Server):** https://server-iso8583.hallancosta.com (ON) 🟢
-
-## 📸 Preview
-<img src="https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/web/screenshots/transaction-approved.png?raw=true">
 
 ## 🛠️ Technologies Used
 
