@@ -2,9 +2,9 @@ import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import cors from '@koa/cors';
 
-import router from './routes.ts';
+import router from './modules/http/routes.ts';
 
-import { establishConnectionBrand } from './modules/brand/brandClient.ts';
+import { establishConnectionBrand } from './modules/brand/clients/brandClient.ts';
 
 const app = new Koa();
 

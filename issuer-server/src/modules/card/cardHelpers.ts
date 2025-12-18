@@ -1,3 +1,4 @@
-import { type Card, CARDS } from "./cards.ts";
+const VALID_PROCESSING_CODES = new Set(['000000', '200000', '900000']);
 
-export const findCard = (pan: string): Card | undefined => CARDS.find((c) => c.pan === pan);
+export const isValidProcessingCode = (processingCode: string): boolean =>
+  VALID_PROCESSING_CODES.has(processingCode);

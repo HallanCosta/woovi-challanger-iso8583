@@ -1,5 +1,5 @@
-import { ACCOUNTS, CLEARING } from '../src/modules/account/accounts.ts';
-import { getAccounts } from '../src/modules/account/accountList.ts';
+import { ACCOUNTS, CLEARING } from '../src/modules/account/__fixtures__/accounts.ts';
+import { getAccountsByIds } from '../src/modules/account/queries/getAccountsByIds.ts';
 import { closeTbClient } from '../src/modules/tigerbeetle/tbClient.ts';
 
 type WithBalance = {
@@ -18,7 +18,7 @@ async function main() {
   ];
 
   const ids = metas.map((m) => m.id);
-  const accounts = await getAccounts(ids);
+  const accounts = await getAccountsByIds(ids);
   const map = new Map<bigint, any>();
   for (const acc of accounts) {
     map.set(acc.id, acc);

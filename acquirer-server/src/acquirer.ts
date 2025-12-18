@@ -5,13 +5,14 @@
  * Cards with prefix (4026) are cards that issue the processing code (000000) for the transaction to be processed via Card.
  */
 
-import { BRANDS } from './modules/brand/brands.ts';
+import { BRANDS } from './modules/brand/__fixtures__/brands.ts';
 import { brandRouteTransaction } from './modules/brand/brandConnectorService.ts';
 import { findBrandName, matchesPrefix } from './modules/card/cardHelpers.ts';
 import { PROCESSING_CODE, PROCESSING_CODE_LABEL } from './enums/processingCode.ts';
-import { authorizeAndCaptureCardFlow, pixTransactionFlow, type CardFlowInput } from './modules/card/cardFlow.ts';
+import { authorizeAndCaptureCardFlow } from './modules/card/commands/flow/authorizeAndCaptureCardFlow.ts';
+import { pixTransactionFlow } from './modules/card/commands/flow/pixTransactionFlow.ts';
 
-import type { Transaction } from './modules/card/cardTransaction.js';
+import type { Transaction } from './modules/card/cardTypes.ts';
 import type { BrandConnectorResult } from './modules/brand/connectors/types.ts';
 import { ISO8583_RESPONSE_CODES_NAMES } from '../../lib/iso8583/responseCodes.ts';
 

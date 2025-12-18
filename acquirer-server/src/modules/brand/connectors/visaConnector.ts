@@ -1,5 +1,5 @@
-import { getBrandConnection } from '../brandClient.ts';
-import type { Transaction } from '../../card/cardTransaction.ts';
+import { getBrandConnection } from '../clients/brandClient.ts';
+import type { Transaction } from '../../card/cardTypes.ts';
 import type { BrandConnectorResult } from './types.ts';
 
 export const visaConnector = async (transaction: Transaction): Promise<BrandConnectorResult> => {

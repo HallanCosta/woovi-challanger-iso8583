@@ -78,7 +78,7 @@ We reuse the standard purchase code `000000` for normal card brands and reserve 
 
 ## Test in Postman
 **Version 2.0**
-- [Download Postman Collection v2.0](https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/server/docs/api.postman_collection.json)
+- [Download Postman Collection v2.0](https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/acquirer-server/docs/api.postman_collection.json)
 
 ## 🚀 How to Run the Project
 
@@ -109,13 +109,14 @@ We reuse the standard purchase code `000000` for normal card brands and reserve 
   cd woovi-challanger-iso8583
   ```
 
-- **Start Simulator**
+- **Start Docker**
   ```sh
-  # Start with docker
+  # Start the python and tigerbeetle
   docker compose -f docker-compose.yml up
+  ```
 
-  # OR
-
+- **Start Simulator - Deprecated**
+  ```sh
   # Enter the simulator folder
   cd ISO8583-Simulator
 
@@ -126,10 +127,10 @@ We reuse the standard purchase code `000000` for normal card brands and reserve 
   http://0.0.0.0:9218
   ```
 
-- **Start Server**
+- **Start Acquirer Server**
   ```sh
   # Enter the project folder
-  cd server
+  cd acquirer-server
 
   # Install dependencies
   pnpm install
@@ -138,18 +139,48 @@ We reuse the standard purchase code `000000` for normal card brands and reserve 
   pnpm dev
 
   # Access at
-  http://localhost:4278
+  http://localhost:9000
 
   # =======================================
   # (optional)
   # Run acquirer with PIX card
-  pnpm dev:acquirer:pix
+  pnpm card:pix
 
   # Run acquirer with Mastercard
-  pnpm dev:acquirer:card:mastercard
+  pnpm card:mastercard
 
   # Run acquirer with Visa
-  pnpm dev:acquirer:card:visa
+  pnpm card:visa
+  ```
+
+- **Start Brands Server**
+  ```sh
+  # Enter the project folder
+  cd brands-server
+
+  # Install dependencies
+  pnpm install
+
+  # Start the project
+  pnpm dev
+
+  # Access at
+  http://localhost:9001
+  ```
+
+- **Start Issuer Server**
+  ```sh
+  # Enter the project folder
+  cd issuer-server
+
+  # Install dependencies
+  pnpm install
+
+  # Start the project
+  pnpm dev
+
+  # Access at
+  http://localhost:9002
   ```
 
 - **Start Web (Frontend Tester)**

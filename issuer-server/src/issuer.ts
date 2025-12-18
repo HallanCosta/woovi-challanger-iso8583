@@ -9,9 +9,9 @@ import { MTI } from '../../lib/iso8583/mti.ts';
 import { logMessage } from './utils/logs.ts';
 import { TPDU_RESPONSE } from './utils/tpdu.ts';
 
-import { authorizeCard } from './modules/card/cardAuthorization.ts';
-import { createCardTransaction } from './modules/card/cardTransaction.ts';
-import { findCard } from './modules/card/cardHelpers.ts';
+import { authorizeCard } from './modules/card/queries/authorizeCard.ts';
+import { createCardTransaction } from './modules/card/commands/createCardTransaction.ts';
+import { findCard } from './modules/card/queries/findCard.ts';
 
 export type IssuerMessageInput = {
   socket: Socket;

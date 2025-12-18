@@ -1,5 +1,5 @@
 import { createTcpServer } from '../../lib/tcp/server.ts';
-import { processMessage } from './handlers/messageHandler.ts';
+import { processMessage } from './modules/brand/messageHandler.ts';
 
 const DEFAULT_BRAND_PORT = Number(process.env.SERVER_PORT);
 

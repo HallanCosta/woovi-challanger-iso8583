@@ -78,7 +78,7 @@ Reaproveitamos o código padrão de compra `000000` para bandeiras normais e res
 
 ## Test in Postman
 **Version 2.0**
-- [Download Postman Collection v2.0](https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/server/docs/api.postman_collection.json)
+- [Download Postman Collection v2.0](https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/acquirer-server/docs/api.postman_collection.json)
 
 ## 🚀 Como Rodar o Projeto
 
@@ -110,13 +110,14 @@ Reaproveitamos o código padrão de compra `000000` para bandeiras normais e res
   cd woovi-challanger-iso8583
   ```
 
-- **Iniciar Simulator**
+- **Iniciar Docker**
   ```sh
-  # Iniciar com docker
+  # Iniciar o python e o tigerbeetle
   docker compose -f docker-compose.yml up
+  ```
 
-  # OR
-
+- **Iniciar Simulator - Deprecated**
+  ```sh
   # Entrar na pasta do simulador
   cd ISO8583-Simulator
 
@@ -127,10 +128,10 @@ Reaproveitamos o código padrão de compra `000000` para bandeiras normais e res
   http://0.0.0.0:9218
   ```
 
-- **Iniciar Servidor**
+- **Iniciar Acquirer Server**
   ```sh
   # Entre na pasta do projeto
-  cd server
+  cd acquirer-server
 
   # Instala as dependências
   pnpm install
@@ -139,18 +140,48 @@ Reaproveitamos o código padrão de compra `000000` para bandeiras normais e res
   pnpm dev
 
   # Acessar
-  http://localhost:4278
+  http://localhost:9000
 
   # =======================================
   # (opicional)
   # Rodar acquirer com cartão pix
-  pnpm dev:acquirer:pix
+  pnpm card:pix
 
   # Rodar acquirer com cartão mastercard
-  pnpm dev:acquirer:card:mastercard
+  pnpm card:mastercard
 
   # Rodar acquirer com cartão visa
-  pnpm dev:acquirer:card:visa
+  pnpm card:visa
+  ```
+
+- **Iniciar Brands Server**
+  ```sh
+  # Entre na pasta do projeto
+  cd brands-server
+
+  # Instala as dependências
+  pnpm install
+
+  # Inicia o projeto
+  pnpm dev
+
+  # Acessar
+  http://localhost:9001
+  ```
+
+- **Iniciar Issuer Server**
+  ```sh
+  # Entre na pasta do projeto
+  cd issuer-server
+
+  # Instala as dependências
+  pnpm install
+
+  # Inicia o projeto
+  pnpm dev
+
+  # Acessar
+  http://localhost:9002
   ```
 
 - **Iniciar Web (Testador frontend)**
@@ -193,20 +224,19 @@ woovi-challanger-iso8583/
 ├── ISO8583-Simulator/
 │   ├── start.py
 │   └── ...
-├── server/
+├── acquirer-server/
 │   ├── src/
-│   │   ├── enums/
-│   │   ├── lib/
-│   │   └── acquirer.ts        
-│   │   └── config.ts         
-│   │   └── routes.ts         
-│   │   └── server.ts        
-│   │   └── types.ts       
 │   ├── docs/
-│   ├── scripts/
 │   ├── package.json
-│   ├── tsconfig.json
-│   └── tsconfig.build.json
+│   └── ...
+├── brands-server/
+│   ├── src/
+│   ├── package.json
+│   └── ...
+├── issuer-server/
+│   ├── src/
+│   ├── package.json
+│   └── ...
 │
 ├── web/
 │   ├── src/

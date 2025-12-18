@@ -1,5 +1,5 @@
 import { acquirer } from '../src/acquirer.ts';
-import { closeBrandConnection } from '../src/modules/brand/brandClient.ts';
+import { closeBrandConnection } from '../src/modules/brand/clients/brandClient.ts';
 
 const transaction = {
   amount: '000000005214',                  // Amount in cents

@@ -2,10 +2,10 @@ import { mastercardConnector } from './connectors/mastercardConnector.ts';
 import { visaConnector } from './connectors/visaConnector.ts';
 import { pixConnector } from './connectors/pixConnector.ts';
 import { eloConnector } from './connectors/eloConnector.ts';
-import { BRANDS } from './brands.ts';
+import { BRANDS } from './__fixtures__/brands.ts';
 import { startsWithAny } from './brandHelpers.ts';
 import type { BrandConnectorResult } from './connectors/types.ts';
-import type { Transaction } from '../card/cardTransaction.ts';
+import type { Transaction } from '../card/cardTypes.ts';
 
 export async function brandRouteTransaction({ transaction }: { transaction: Transaction }): Promise<BrandConnectorResult> {
   const pan = transaction.cardNumber;

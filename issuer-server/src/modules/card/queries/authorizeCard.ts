@@ -1,0 +1,43 @@
+import type { ParsedIso8583Message } from '../../../../../lib/iso8583/parser.ts';
+import { getResponseMti } from '../../../../../lib/iso8583/response.ts';
+import { buildIso8583Response } from '../../../../../lib/iso8583/response.ts';
+import { ISO8583_RESPONSE_CODES_NAMES } from '../../../../../lib/iso8583/responseCodes.ts';
+
+import { TPDU_RESPONSE } from '../../../utils/tpdu.ts';
+
+import { isValidProcessingCode } from '../cardHelpers.ts';
+import { findCard } from './findCard.ts';
+
+export type AuthorizationResponse = {
+  rc: string;
+  buffer: Buffer;
+};
+
+export const authorizeCard = async ({ iso }: { iso: ParsedIso8583Message }): Promise<AuthorizationResponse> => {
+  const pan = iso.fields.get(2)?.value ?? '';
+  const processingCode = iso.fields.get(3)?.value ?? '';
+  const card = findCard(pan);
+
+  let rc: string = ISO8583_RESPONSE_CODES_NAMES.APPROVED;
+
+  if (!card) {
+    rc = ISO8583_RESPONSE_CODES_NAMES.INVALID_CARD;
+  } else if (!isValidProcessingCode(processingCode)) {
+    rc = ISO8583_RESPONSE_CODES_NAMES.INVALID_TRANSACTION;
+  }
+
+  const responseMti = getResponseMti({ requestMti: iso.mti });
+  const response = buildIso8583Response({
+    parsed: iso,
+    mti: responseMti,
+    rc,
+    tpdu: TPDU_RESPONSE
+  });
+
+  console.log(`[ISSUER][CARD->AUTHORIZATION] PAN=${pan} rc=${rc} MTI=${responseMti}`);
+
+  return {
+    rc,
+    buffer: response.buffer
+  };
+};

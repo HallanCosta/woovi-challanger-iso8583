@@ -1,4 +1,4 @@
-import { BRANDS } from '../brand/brands.ts';
+import { BRANDS } from '../brand/__fixtures__/brands.ts';
 
 export const matchesPrefix = (cardNumber: string, prefixes: readonly string[]): boolean =>
   prefixes.some((prefix) => cardNumber.startsWith(prefix));

@@ -1,5 +1,5 @@
 import type { Socket } from 'node:net';
-import type { Transaction } from '../../card/cardTransaction.ts';
+import type { Transaction } from '../../card/cardTypes.ts';
 
 export interface BrandActiveConnectorResult {
   type: 'active';
