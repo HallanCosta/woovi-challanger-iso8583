@@ -1,5 +1,5 @@
 import { amountToCurrency } from '../../../lib/iso8583/utils.ts';
-import type { Transaction } from '../modules/card/cardTransaction.ts';
+import type { Transaction } from '../modules/card/cardTypes.ts';
 import { type TransactionStage } from '../enums/stage.ts';
 
 export type LogMessageParams = {

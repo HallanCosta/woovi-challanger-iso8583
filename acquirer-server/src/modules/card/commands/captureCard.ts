@@ -1,5 +1,6 @@
+import { TRANSACTION_STAGE } from '../../../enums/stage.ts';
 import { createCardTransaction } from './createCardTransaction.ts';
-import { TRANSACTION_STAGE, type CardFlowInput, type CardFlowResult } from './flow/cardFlowTypes.ts';
+import { type CardFlowInput, type CardFlowResult } from './authorizeAndCaptureCardFlow.ts';
 
 // Apenas captura/financial (MTI 0200).
 export const captureCard = async ({
@@ -26,6 +27,7 @@ export const captureCard = async ({
       message: capture.description,
       type: processingCodeName,
       brandName,
+      mti: capture.mti,
       stage: TRANSACTION_STAGE.FINANCIAL,
     };
   }
@@ -37,5 +39,6 @@ export const captureCard = async ({
     message: capture.description,
     type: processingCodeName,
     brandName,
+    mti: capture.mti,
   };
 };

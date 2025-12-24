@@ -8,6 +8,8 @@ export interface Transaction {
   currency: string;            // Currency (hex) - 764 = BRL
   cardNumber: string;          // Card number with brand pix (PAN)
   processingCode?: string;     // Processing code
+  debitAccountId?: string;     // TigerBeetle account to debit (DE102)
+  creditAccountId?: string;    // TigerBeetle account to credit (DE103)
   holdId?: string;             // Hold identifier returned by issuer (DE48/62)
 }
 

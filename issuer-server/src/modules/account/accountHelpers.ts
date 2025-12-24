@@ -15,6 +15,7 @@ export type LedgerTransfer = {
 export type AccountLedgerView = {
   id: string;
   name: string;
+  type?: 'customer' | 'clearing' | 'merchant';
   credits_posted: string;
   debits_posted: string;
   balance: string;
@@ -34,13 +35,15 @@ export const mapTransferToLedgerTransfer = (transfer: Transfer): LedgerTransfer 
 export const mapAccountToLedgerView = (
   account: { id: bigint; credits_posted: bigint; debits_posted: bigint },
   name: string,
-  lastDebit?: Transfer | null
+  lastDebit?: Transfer | null,
+  type: AccountLedgerView['type'] = 'customer'
 ): AccountLedgerView => {
   const balance = account.credits_posted - account.debits_posted;
 
   return {
     id: account.id.toString(),
     name,
+    type,
     credits_posted: account.credits_posted.toString(),
     debits_posted: account.debits_posted.toString(),
     balance: balance.toString(),

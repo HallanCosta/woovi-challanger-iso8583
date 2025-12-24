@@ -7,10 +7,15 @@
     "dev": "node --no-warnings --experimental-strip-types --env-file .env --watch src/server.ts",
     "start": "node --no-warnings --experimental-strip-types --env-file .env src/server.ts",
     "type-check": "tsc --noEmit",
-    "list:cards": "node --experimental-strip-types --env-file .env scripts/listCards.ts",
-    "list:accounts": "node --experimental-strip-types --env-file .env scripts/listAccounts.ts",
-    "create:accounts": "node --experimental-strip-types --env-file .env scripts/createAccounts.ts",
-    "reset": "node --experimental-strip-types --env-file .env scripts/reset.ts"
+    "list:cards": "node --no-warnings --experimental-strip-types --env-file .env scripts/listCards.ts",
+    "list:accounts": "node --no-warnings --experimental-strip-types --env-file .env scripts/listAccounts.ts",
+    "create:accounts": "node --no-warnings --experimental-strip-types --env-file .env scripts/createAccounts.ts",
+    "seed:balances": "node --no-warnings --experimental-strip-types --env-file .env scripts/seedBalances.ts",
+    "chown:ledger": "docker run --rm -v \"$(pwd)/tb-data:/data\" busybox chown -R $(id -u):$(id -g) /data",
+    "wipe": "pnpm run compose:down && pnpm run chown:ledger && rm -rf tb-data/ && pnpm run compose:up && node --no-warnings --experimental-strip-types --env-file .env scripts/wipe.ts",
+    "compose:up": "docker compose up -d",
+    "compose:restart": "docker compose restart",
+    "compose:down": "docker compose down"
   },
   "dependencies": {
     "@koa/cors": "^5.0.0",
@@ -21,6 +26,8 @@
   },
   "devDependencies": {
     "@types/koa": "^3.0.1",
+    "@types/koa-bodyparser": "^4.3.12",
+    "@types/koa__cors": "^5.0.0",
     "@types/node": "^24.9.2",
     "typescript": "^5.9.3"
   }

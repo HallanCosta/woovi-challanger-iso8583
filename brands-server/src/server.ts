@@ -1,11 +1,10 @@
 import { createTcpServer } from '../../lib/tcp/server.ts';
 import { processMessage } from './modules/brand/messageHandler.ts';
 
-const DEFAULT_BRAND_PORT = Number(process.env.SERVER_PORT);
+const SERVER_TCP_PORT = Number(process.env.SERVER_TCP_PORT);
 
 function startBrandServer(): void {
-  const port = DEFAULT_BRAND_PORT;
-  const server = createTcpServer(port);
+  const server = createTcpServer(SERVER_TCP_PORT);
 
   server.events.on('connect', ({ clientLabel }) =>
     console.log(`[BRANDS] Client connected: ${clientLabel}`)

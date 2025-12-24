@@ -1,0 +1,159 @@
+{
+	"info": {
+		"_postman_id": "e4677c7f-bd41-468f-840f-59dd60681be2",
+		"name": "ISO8583 - HTTP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "48891101",
+		"_collection_link": "https://hallancosta-2571599.postman.co/workspace/H%C3%A1llan-da-Silva-Costa's-Workspa~a6f64e06-e34d-46bb-802a-d7d579ce46e4/collection/48891101-e4677c7f-bd41-468f-840f-59dd60681be2?action=share&source=collection_link&creator=48891101"
+	},
+	"item": [
+		{
+			"name": "Acquirer",
+			"item": [
+				{
+					"name": "Transaction - Mastercard (approve)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cardNumber\": \"5162000000000000\",\n  \"amount\": \"000000005200\",\n  \"transactionId\": \"000123\",\n  \"acquirerInstitution\": \"01020000000\",\n  \"merchantId\": \"WOOVIMERCHANT001\",\n  \"currency\": \"764\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{acquirerBaseUrlApi}}/transaction"
+					},
+					"response": []
+				},
+				{
+					"name": "Transaction - Visa (approve)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cardNumber\": \"4026000000001111\",\n  \"amount\": \"000000005200\",\n  \"transactionId\": \"000123\",\n  \"acquirerInstitution\": \"01020000000\",\n  \"merchantId\": \"WOOVIMERCHANT001\",\n  \"currency\": \"764\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{acquirerBaseUrlApi}}/transaction"
+					},
+					"response": []
+				},
+				{
+					"name": "Transaction - Pix (approve)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cardNumber\": \"3907000000001111\",\n  \"amount\": \"000000005200\",\n  \"transactionId\": \"000123\",\n  \"acquirerInstitution\": \"01020000000\",\n  \"merchantId\": \"WOOVIMERCHANT001\",\n  \"currency\": \"764\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{acquirerBaseUrlApi}}/transaction"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Issuer",
+			"item": [
+				{
+					"name": "Cards - List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{issuerBase}}/cards"
+					},
+					"response": []
+				},
+				{
+					"name": "Cards - Authorize (consulta)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cardNumber\": \"5162000000000000\",\n  \"amount\": \"000000005200\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{issuerBase}}/cards/authorize"
+					},
+					"response": []
+				},
+				{
+					"name": "Accounts - List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{issuerBase}}/accounts"
+					},
+					"response": []
+				},
+				{
+					"name": "Accounts - Show (latest debit)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{issuerBase}}/accounts/1001"
+					},
+					"response": []
+				},
+				{
+					"name": "Accounts - Ledger (extrato)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{issuerBase}}/accounts/1001/ledger"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:9100"
+		},
+		{
+			"key": "issuerBase",
+			"value": "http://localhost:9102"
+		}
+	]
+}

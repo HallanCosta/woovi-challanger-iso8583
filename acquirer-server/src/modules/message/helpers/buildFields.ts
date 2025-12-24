@@ -46,7 +46,17 @@ export const buildFieldsFromTransaction = ({
     }
   ];
 
-  return [...baseFields, ...extraFields];
+  const accountFields: IsoField[] = [];
+
+  if (transaction.debitAccountId) {
+    accountFields.push({ field: 102, value: llvarASCII(transaction.debitAccountId) });
+  }
+
+  if (transaction.creditAccountId) {
+    accountFields.push({ field: 103, value: llvarASCII(transaction.creditAccountId) });
+  }
+
+  return [...baseFields, ...accountFields, ...extraFields];
 };
 
 export const resolveProcessingCode = (transaction: Transaction, fallback: string): string =>

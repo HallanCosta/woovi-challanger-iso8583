@@ -487,6 +487,22 @@ const ISO8583_FIELD_FORMATS: Record<string, iso8583FieldFormat> = {
     MaxLen: 8,
     Format: "Binary"
   },
+  "102": {
+    ContentType: "ans",
+    Label: "Account identification 1 (debit)",
+    LenType: "llvar",
+    MaxLen: 28,
+    MinLen: 1,
+    Format: "ASCII"
+  },
+  "103": {
+    ContentType: "ans",
+    Label: "Account identification 2 (credit)",
+    LenType: "llvar",
+    MaxLen: 28,
+    MinLen: 1,
+    Format: "ASCII"
+  },
   "123": {
     ContentType: "ans",
     Label: "Reserved (private)",

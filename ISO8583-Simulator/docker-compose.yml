@@ -1,0 +1,13 @@
+services:
+  iso8583-simulator:
+    container_name: iso8583-simulator
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./ISO8583-Simulator:/app
+    command: python3 start.py
+    restart: always
+    ports:
+      - "9218:9218"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

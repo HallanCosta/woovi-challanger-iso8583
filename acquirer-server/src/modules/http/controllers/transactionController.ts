@@ -14,9 +14,17 @@ export const processTransaction: Router.Middleware = async (ctx) => {
 
   try {
     const result = await acquirer({ transaction });
+    ctx.status = 200;
     ctx.body = result;
   } catch (error) {
-    ctx.status = 500;
-    ctx.body = { error: error instanceof Error ? error.message : 'Unknown error' };
+    ctx.status = 200;
+    ctx.body = {
+      success: false,
+      responseCode: '91',
+      message: 'Issuer or switch is inoperative',
+      type: 'Unknown',
+      brandName: 'Unknown',
+    };
+    console.error('[ACQUIRER][HTTP] Erro ao processar transação', error);
   }
 };

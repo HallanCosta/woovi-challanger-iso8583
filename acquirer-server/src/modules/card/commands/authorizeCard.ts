@@ -1,5 +1,6 @@
 import { authorizeCardTransaction } from '../queries/authorizeCardTransaction.ts';
-import { TRANSACTION_STAGE, type CardFlowInput, type CardFlowResult } from './flow/cardFlowTypes.ts';
+import { TRANSACTION_STAGE } from '../../../enums/stage.ts';
+import { type CardFlowInput, type CardFlowResult } from './authorizeAndCaptureCardFlow.ts';
 
 // Apenas autorização (MTI 0100).
 export const authorizeCard = async ({
@@ -27,6 +28,7 @@ export const authorizeCard = async ({
       type: processingCodeName,
       brandName,
       stage: TRANSACTION_STAGE.AUTHORIZATION,
+      mti: auth.mti,
     };
   }
 
@@ -37,5 +39,6 @@ export const authorizeCard = async ({
     message: auth.description,
     type: processingCodeName,
     brandName,
+    mti: auth.mti,
   };
 };

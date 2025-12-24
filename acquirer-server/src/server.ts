@@ -12,9 +12,9 @@ app.use(cors());
 app.use(bodyParser());
 app.use(router.routes()).use(router.allowedMethods());
 
-const PORT = Number(process.env.SERVER_PORT || 9201);
+const HTTP_PORT = Number(process.env.SERVER_HTTP_HTTP_PORT || 9100);
 
-app.listen(PORT, async () => {
+app.listen(HTTP_PORT, async () => {
   await establishConnectionBrand();
-  console.log(`[HTTP] Server listening at localhost:${PORT}`);
+  console.log(`[HTTP] Server listening at localhost:${HTTP_PORT}`);
 });

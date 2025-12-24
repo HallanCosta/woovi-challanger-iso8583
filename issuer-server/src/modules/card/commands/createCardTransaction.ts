@@ -5,8 +5,10 @@ import { ISO8583_RESPONSE_CODES_NAMES } from '../../../../../lib/iso8583/respons
 
 import { createLedgerEntry } from '../../ledger/commands/createLedgerEntry.ts';
 
+import { toBigIntOrNull } from '../cardHelpers.ts';
 import { findCard } from '../queries/findCard.ts';
-import { CLEARING } from '../../account/__fixtures__/accounts.ts';
+import { MERCHANTS } from '../../account/__fixtures__/accounts.ts';
+import { getAccountsByIds } from '../../account/queries/getAccountsByIds.ts';
 
 import { TPDU_RESPONSE } from '../../../utils/tpdu.ts';
 
@@ -22,36 +24,59 @@ export type CreateCardTransactionResponse = {
 export const createCardTransaction = async ({ iso }: CreateCardTransaction): Promise<CreateCardTransactionResponse> => {
   const pan = iso.fields.get(2)?.value ?? '';
   const amountStr = iso.fields.get(4)?.value ?? '0';
-  const amount = BigInt(amountStr);
+  const amount = toBigIntOrNull(amountStr);
   const card = findCard(pan);
 
-  if (!card) {
+  const buildResponse = (rc: string) => {
     const responseMti = getResponseMti({ requestMti: iso.mti });
-    const response = buildIso8583Response({
-      parsed: iso,
-      mti: responseMti,
-      rc: '14',
-      tpdu: TPDU_RESPONSE
-    });
+    const response = buildIso8583Response({ parsed: iso, mti: responseMti, rc, tpdu: TPDU_RESPONSE });
 
     return {
-      rc: ISO8583_RESPONSE_CODES_NAMES.INVALID_CARD,
-      buffer: response.buffer
+      rc,
+      buffer: response.buffer,
     };
+  };
+
+  if (!card) {
+    return buildResponse(ISO8583_RESPONSE_CODES_NAMES.INVALID_CARD);
+  }
+
+  if (amount === null) {
+    return buildResponse(ISO8583_RESPONSE_CODES_NAMES.INVALID_AMOUNT);
+  }
+
+  const debitAccountOverride = iso.fields.get(102)?.value;
+  const creditAccountOverride = iso.fields.get(103)?.value;
+
+  const debitAccountId = toBigIntOrNull(debitAccountOverride ?? card.accountId.toString());
+  const merchant = MERCHANTS[0];
+  const creditAccountId = toBigIntOrNull(creditAccountOverride ?? merchant.id.toString());
+
+  if (!debitAccountId || !creditAccountId) {
+    return buildResponse(ISO8583_RESPONSE_CODES_NAMES.INVALID_TRANSACTION);
+  }
+
+  const [debitAccount] = await getAccountsByIds([debitAccountId]);
+  if (!debitAccount) {
+    return buildResponse(ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE);
+  }
+
+  const available = debitAccount.credits_posted - debitAccount.debits_posted;
+  if (amount > available) {
+    return buildResponse(ISO8583_RESPONSE_CODES_NAMES.NOT_SUFFICIENT_FUNDS);
   }
 
   const entry = await createLedgerEntry({
-    debitAccountId: card.accountId,
-    creditAccountId: CLEARING.id,
-    amount
+    debitAccountId,
+    creditAccountId,
+    amount,
   });
   const rc = entry.rc;
 
-  const responseMti = getResponseMti({ requestMti: iso.mti });
-  const response = buildIso8583Response({ parsed: iso, mti: responseMti, rc, tpdu: TPDU_RESPONSE });
+  const response = buildResponse(rc);
 
   console.log(
-    `[ISSUER][CARD->TRANSACTION] PAN=${pan} debit=${card.accountId} credit=${CLEARING.id} amount=${amount.toString()} rc=${rc} MTI=${responseMti}`
+    `[ISSUER][CARD->TRANSACTION] PAN=${pan} debit=${debitAccountId.toString()} credit=${creditAccountId.toString()} amount=${amount.toString()} rc=${rc} MTI=${getResponseMti({ requestMti: iso.mti })}`
   );
 
   return {

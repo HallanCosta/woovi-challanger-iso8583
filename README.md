@@ -1,31 +1,30 @@
-# 🏦 Woovi Challanger - ISO8583
+# 🏦 Woovi Challenger - ISO8583
 
-[🇧🇷 Leia esse README em Português](https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/README-ptBR.md)
+[🇧🇷 Leia este README em Português](https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/README-ptBR.md)
 
-<hr>
+---
 
-## ☁️ Live Demo
-- **Production (Web Tester):** https://iso8583.hallancosta.com (ON) 🟢
-- **Production (Server):** https://server-iso8583.hallancosta.com (ON) 🟢
+## ☁️ Live demo
+- **Production (Web tester):** https://iso8583.hallancosta.com (ON) 🟢
+- **Production (API):** https://server-iso8583.hallancosta.com (ON) 🟢
 
 ## 📸 Preview
 <img src="https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/web/screenshots/transaction-approved.png?raw=true">
 
-ISO 8583 transaction simulator with Acquirer that connects to an Issuer.
+ISO 8583 transaction simulator with an Acquirer connecting to an Issuer.
 
-Processing Pix and Card transactions using ISO8583:<br>
-- Cards with prefix 3907 are cards that emit the processing code (900000) for the transaction to be done with PIX.<br>
-- Cards with prefix 5162 are cards that emit the processing code (000000) for the transaction to be done with Card.<br>
-- Cards with prefix 4026 are cards that emit the processing code (000000) for the transaction to be done with Card.<br>
-
-NOTE: Frontend only tests transactions with prefix 3907 simulating a PIX flag, but it's possible to test other flags by activating the feature flag in the frontend
+Processing Pix and Card flows via ISO8583:<br>
+- Prefix 3907 → processing code `900000` (Pix flow)<br>
+- Prefix 5162 → processing code `000000` (Card flow)<br>
+- Prefix 4026 → processing code `000000` (Card flow)<br>
 
 ### Why 000000 and 900000?
-We reuse the standard purchase code `000000` for normal card brands and reserve `900000` as a PIX flag. That split lets the simulator route flows differently (card vs. PIX) without inventing new MTIs or changing the ISO field mapping.
+`000000` stays as the standard purchase code for regular brands; `900000` flags Pix. This split routes card vs. Pix without inventing MTIs or changing ISO field mappings.
 
-## 🪢 Authorization + Capture flow (Acquirer ↔ Brand ↔ Issuer)
-*Brand examples: Mastercard, Visa, Elo — routing based on PAN prefix to the right issuer/simulator.*
+## 🪢 Authorization + Capture Flow (Acquirer ↔ Brand ↔ Issuer)
+*Brand examples: Mastercard, Visa, Elo — routed by PAN prefix to the correct issuer/simulator.*
 ```
+Card Authorization
 ┌───────────┐        ┌────────────┐        ┌───────────┐
 │ Acquirer  │ -----> │   Brand    │ -----> │  Issuer   │
 │           │ 0100   │ (Visa/Mc)  │ 0100   │           │
@@ -42,53 +41,58 @@ We reuse the standard purchase code `000000` for normal card brands and reserve 
      (Minutes, seconds, or even days later — depends on the operation)
 
 
+Card Transaction
 ┌───────────┐        ┌────────────┐        ┌───────────┐
 │ Acquirer  │ -----> │   Brand    │ -----> │  Issuer   │
 │           │ 0200   │ (Visa/Mc)  │ 0200   │           │
 └───────────┘        └────────────┘        └───────────┘
        ▲                      │                     │
-       │                      │                     └──(0210/0220 Financial Resp)
+       │                      │                     │
+       │                      │        ┌──────────────────────────┐
+       │                      │        │   TigerBeetle Ledger      │
+       │                      │        │  (Debit / Credit Commit)  │
+       │                      │        └──────────────────────────┘
+       │                      │                     │
+       │                      │                     └──(0220 Financial Response)
        │                      │                             Approved / Error
        │                      ▼
-       │               (0210/0220 Financial Resp)
+       │               (0220 Financial Response)
        │
        └────────── Clearing & Settlement (Brand) ──────────┘
 ```
 
-## 🛠️ Technologies Used
+## 🛠️ Tech Stack
 
 ### Frontend
-- **React 19** - Framework for building componentized interfaces
-- **Vite** - Modern and extremely fast build tool for development
-- **TypeScript 5.9** - JavaScript superset with static typing
-- **React Hook Form** - Performant form state management
-- **Zod v4** - Schema validation for data validation (CPF, RG, etc)
-- **@hookform/resolvers** - Integration between React Hook Form and Zod
-- **Tailwind CSS v4** - Utility-first CSS framework for rapid styling
-- **Shadcn UI / Radix UI** - Accessible and customizable components (Avatar, Select, Toast)
-- **Lucide React** - Set of consistent and lightweight icons
+- **React 19** - component-driven UI
+- **Vite** - fast dev/build tool
+- **TypeScript 5.9** - static typing
+- **React Hook Form** - performant forms
+- **Zod v4** - schema validation
+- **Tailwind CSS v4** - utility-first styling
+- **Shadcn UI / Radix UI** - accessible UI primitives
+- **Lucide React** - icon set
 
 ### Server
 - **Node.js**
 - **Koa.js** - HTTP server
-- **TigerBeetle** - Ledger de alta performance para contas/transfers
+- **TigerBeetle** - high-performance ledger
 
 ### ISO 8583 Simulator
 - **Python**
 
 ## Test in Postman
-**Version 2.0**
-- [Download Postman Collection v2.0](https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/acquirer-server/docs/api.postman_collection.json)
+- [Download Postman Collection v2.0](https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/docs/api.postman_collection.json)
 
-## 🚀 How to Run the Project
+## 🚀 Getting Started
 
 ### Prerequisites
-- **Node.js** (version 22 recommended, minimum 18)
+- **Node.js** (22 recommended, 18+ minimum)
   ```sh
   https://nodejs.org/en/download/
   ```
 
-- **PNPM** (package manager)
+- **PNPM**
   ```sh
   npm install pnpm -g
   ```
@@ -98,121 +102,100 @@ We reuse the standard purchase code `000000` for normal card brands and reserve 
   https://docs.docker.com/get-docker/
   ```
 
-### Installation and Setup
+### Install & Run
 
 - **Clone the project**
   ```sh
-  # Clone the repository
   git clone https://github.com/HallanCosta/woovi-challanger-iso8583.git
-
-  # Enter the project folder
   cd woovi-challanger-iso8583
-  ```
-
-- **Start Docker**
-  ```sh
-  # Start the python and tigerbeetle
-  docker compose -f docker-compose.yml up
   ```
 
 - **Start Simulator - Deprecated**
   ```sh
-  # Enter the simulator folder
   cd ISO8583-Simulator
 
-  # Start the simulator server
+  # Start with docker
+  docker compose -f docker-compose.yml up
+
+  # Start with python
   python3 start.py
 
-  # Host
+  # TCP
   http://0.0.0.0:9218
   ```
 
 - **Start Acquirer Server**
   ```sh
-  # Enter the project folder
   cd acquirer-server
-
-  # Install dependencies
   pnpm install
-
-  # Start the project
   pnpm dev
 
-  # Access at
-  http://localhost:9000
+  # TCP
+  http://localhost:9200
 
-  # =======================================
-  # (optional)
-  # Run acquirer with PIX card
+  # HTTP
+  http://localhost:9100
+
+  # Optional presets
   pnpm card:pix
-
-  # Run acquirer with Mastercard
   pnpm card:mastercard
-
-  # Run acquirer with Visa
   pnpm card:visa
   ```
 
 - **Start Brands Server**
   ```sh
-  # Enter the project folder
   cd brands-server
-
-  # Install dependencies
   pnpm install
-
-  # Start the project
   pnpm dev
 
-  # Access at
-  http://localhost:9001
+  # TCP
+  http://localhost:9201
+  # HTTP (health)
+  http://localhost:9101
   ```
 
 - **Start Issuer Server**
   ```sh
-  # Enter the project folder
   cd issuer-server
-
-  # Install dependencies
   pnpm install
-
-  # Start the project
+  pnpm compose:up
+  pnpm create:accounts
   pnpm dev
 
-  # Access at
-  http://localhost:9002
+  # TCP
+  http://localhost:9202
+  # HTTP
+  http://localhost:9102
+
+
+  ### others commands (issuer)
+  pnpm compose:up — start TigerBeetle (issuer compose) in background.
+  pnpm compose:down — stop TigerBeetle.
+  pnpm compose:restart — restart TigerBeetle.
+  pnpm create:accounts — create base accounts if missing (does not touch balances).
+  pnpm seed:balances — set customer balances to 10,000.00 (moves via clearing).
+  pnpm wipe — stop TB, fix ledger permissions, delete `issuer-server/tb-data/`, start TB, re-seed (full reset).
   ```
 
-- **Start Web (Frontend Tester)**
+- **Start Web (tester frontend)**
   ```sh
-  # Enter the project folder
   cd web
-
-  # Install dependencies
   pnpm install
-
-  # Start the project
   pnpm dev
 
-  # Access at
+  # Access
   http://localhost:4174
   ```
 
-## 😅 Challenges Found
 
-Fields sent in different byte sizes (ASCII and BCD).  
-The **bitmap** must be compatible with the sequence of fields sent to the simulator.
 
-| Representation | Bytes used for "1234"          | Format                                                       |
-|--------------|-----------------------------------|-------------------------------------------------------------|
-| **BCD**      | 2 bytes → `0x12 0x34`             | Each pair of digits is packed into 1 byte                  |
-| **ASCII**    | 4 bytes → `0x31 0x32 0x33 0x34`   | Each digit is sent as its ASCII code (1 byte per digit) |
+## 😅 Challenges
 
-- Difference in field representation (BCD vs ASCII)
-- Precise bitmap adjustment according to the fields sent
-- Handling of variable fields (LLVAR/LLLVAR) with length in ASCII or BCD
-- Variation in message size prefix (2 bytes, 4 bytes or none)
-- Adaptation of the protocol to modern scenarios (ex: PIX) outside the original ISO
+- Binary vs ASCII field sizes (BCD vs ASCII)
+- Bitmap must match the exact field sequence sent to the simulator
+- Variable-length fields (LLVAR/LLLVAR) with ASCII or BCD lengths
+- Message length prefixes (2 bytes, 4 bytes, or none)
+- Adapting ISO flows to modern cases (e.g., Pix)
 
 ## 📂 Project Structure
 
@@ -221,20 +204,21 @@ woovi-challanger-iso8583/
 ├── ISO8583-Simulator/
 │   ├── start.py
 │   └── ...
-├── server/
+├── docs/                      # Postman collections (acquirer/issuer HTTP)
+├── acquirer-server/
 │   ├── src/
-│   │   ├── enums/
-│   │   ├── lib/
-│   │   └── acquirer.ts        
-│   │   └── config.ts         
-│   │   └── routes.ts         
-│   │   └── server.ts        
-│   │   └── types.ts       
-│   ├── docs/
-│   ├── scripts/
 │   ├── package.json
-│   ├── tsconfig.json
-│   └── tsconfig.build.json
+│   └── ...
+├── brands-server/
+│   ├── src/
+│   ├── package.json
+│   └── ...
+├── issuer-server/
+│   ├── src/
+│   ├── scripts/
+│   ├── docker-compose.yml
+│   ├── package.json
+│   └── ...
 │
 ├── web/
 │   ├── src/
@@ -250,7 +234,7 @@ woovi-challanger-iso8583/
 │   ├── tsconfig.json
 │   └── vite.config.ts
 │
-├── package.json          
+├── package.json
 ├── README.md
 └── pnpm-workspace.yaml
 ```
@@ -259,4 +243,4 @@ woovi-challanger-iso8583/
 
 [<img width="115" height="115" src="https://github.com/HallanCosta.png"  /><br><sub>@HallanCosta</sub>](https://github.com/HallanCosta)
 
-⭐ If this project was useful to you, consider giving it a star in the repository!
+⭐ If this project helped you, please consider starring the repo!

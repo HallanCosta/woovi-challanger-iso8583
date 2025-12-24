@@ -1,4 +1,4 @@
-import { ACCOUNTS, CLEARING } from '../src/modules/account/__fixtures__/accounts.ts';
+import { ACCOUNTS, CLEARING, MERCHANTS } from '../src/modules/account/__fixtures__/accounts.ts';
 import { getAccountsByIds } from '../src/modules/account/queries/getAccountsByIds.ts';
 import { closeTbClient } from '../src/modules/tigerbeetle/tbClient.ts';
 
@@ -14,6 +14,7 @@ type WithBalance = {
 async function main() {
   const metas = [
     ...ACCOUNTS.map((account) => ({ id: account.id, name: account.name, type: 'user' })),
+    ...MERCHANTS.map((merchant) => ({ id: merchant.id, name: merchant.name, type: 'merchant' })),
     { id: CLEARING.id, name: CLEARING.name, type: 'clearing' },
   ];
 
