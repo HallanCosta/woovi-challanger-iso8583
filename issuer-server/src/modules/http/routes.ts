@@ -10,7 +10,7 @@ import { authorizeCardHttp, listCards } from './controllers/cardsController.ts';
 const router = new Router();
 
 router.get('/', async (ctx) => {
-  ctx.body = { message: 'Server is running...' };
+  ctx.body = { message: 'Issuer server is running...' };
 });
 
 router.get('/accounts', listAccounts);
