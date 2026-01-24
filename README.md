@@ -5,7 +5,7 @@
 ---
 
 ## ☁️ Live demo
-- **Production (Web tester):** https://iso8583.hallancosta.com (ON) 🟢
+- **Production (Web):** https://iso8583.hallancosta.com (ON) 🟢
 - **Production (API):** https://server-iso8583.hallancosta.com (ON) 🟢
 
 ## 📸 Preview
@@ -196,6 +196,7 @@ Card Transaction
 - Variable-length fields (LLVAR/LLLVAR) with ASCII or BCD lengths
 - Message length prefixes (2 bytes, 4 bytes, or none)
 - Adapting ISO flows to modern cases (e.g., Pix)
+- Create custom lib iso8583 to NodeJS
 
 ## 📂 Project Structure
 
@@ -219,7 +220,6 @@ woovi-challanger-iso8583/
 │   ├── docker-compose.yml
 │   ├── package.json
 │   └── ...
-│
 ├── web/
 │   ├── src/
 │   │   ├── assets/
@@ -233,7 +233,8 @@ woovi-challanger-iso8583/
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── vite.config.ts
-│
+├── lib/
+│   ├── iso8583/
 ├── package.json
 ├── README.md
 └── pnpm-workspace.yaml

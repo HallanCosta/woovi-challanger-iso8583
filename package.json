@@ -1,0 +1,34 @@
+{
+  "name": "woovi-iso8583-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "build:acquirer": "cd acquirer-server && pnpm build",
+    "build:brands": "cd brands-server && pnpm build",
+    "build:issuer": "cd issuer-server && pnpm build",
+    "build:web": "cd web && pnpm build",
+    "clean": "rm -rf acquirer-server/dist brands-server/dist issuer-server/dist web/dist",
+    "start": "concurrently \"pnpm start:acquirer\" \"pnpm start:brands\" \"pnpm start:issuer\" \"pnpm start:web\"",
+    "start:acquirer": "cd acquirer-server && pnpm start",
+    "start:brands": "cd brands-server && pnpm start",
+    "start:issuer": "cd issuer-server && pnpm start",
+    "start:web": "cd web && pnpm start",
+    "start:production": "pm2 start ecosystem.config.cjs",
+    "stop:production": "pm2 stop ecosystem.config.cjs",
+    "restart:production": "pm2 restart ecosystem.config.cjs",
+    "logs:production": "pm2 logs",
+    "install:all": "pnpm install && cd acquirer-server && pnpm install && cd ../brands-server && pnpm install && cd ../issuer-server && pnpm install && cd ../web && pnpm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Woovi ISO8583 Challenge - Monorepo"
+}

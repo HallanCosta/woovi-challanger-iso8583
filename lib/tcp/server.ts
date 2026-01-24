@@ -28,9 +28,7 @@ export const createTcpServer = (port: number): TcpServer => {
   });
 
   const start = () => {
-    server.listen(port, () => {
-      console.log(`[TCP][SERVER] Listening on port ${port}`);
-    });
+    server.listen(port, () => {});
   };
 
   const stop = () => {

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --mode development --host 0.0.0.0 --port 4174",
     "dev:production": "vite --mode production --host 0.0.0.0 --port 4174",
+    "start": "vite preview --mode production --host 0.0.0.0 --port 4174",
     "restart:production": "pm2 restart ecosystem.config.cjs",
     "start:production": "pm2 start ecosystem.config.cjs",
     "stop:production": "pm2 stop ecosystem.config.cjs",

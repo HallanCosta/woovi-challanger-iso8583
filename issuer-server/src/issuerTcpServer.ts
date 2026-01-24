@@ -23,5 +23,5 @@ export function startIssuerTcpServer(): void {
   );
 
   server.start();
-  console.log(`[TCP][ISSUER] Server listening on port ${TCP_PORT}`);
+  console.log(`[TCP][SERVER] Listening on port ${TCP_PORT}`);
 }

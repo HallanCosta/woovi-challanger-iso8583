@@ -64,6 +64,7 @@ const acquirer = async ({ transaction }: ProcessTransaction): Promise<any> => {
     const typeLabel = transaction.processingCode
       ? PROCESSING_CODE_LABEL[transaction.processingCode] ?? 'Unknown'
       : 'Unknown';
+
     return {
       success: false,
       responseCode: ISO8583_RESPONSE_CODES_NAMES.ISSUER_OR_SWITCH_INOPERATIVE,

@@ -1,14 +1,19 @@
 {
   "name": "brands-server",
   "version": "1.0.0",
+  "main": "dist/main.js",
   "type": "module",
   "scripts": {
-    "dev": "node --experimental-strip-types --env-file ../brands-server/.env --watch src/server.ts",
-    "start": "node --experimental-strip-types --env-file ../brands-server/.env src/server.ts",
+    "dev": "node --no-warnings --experimental-strip-types --env-file .env --watch src/server.ts",
+    "start": "node --env-file .env dist/main.js",
+    "build": "node esbuild.config.js",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^24.9.2",
+    "esbuild": "^0.24.2",
+    "glob": "^13.0.0",
+    "tsx": "^4.7.0",
     "typescript": "^5.9.3"
   }
 }

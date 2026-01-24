@@ -1,13 +1,14 @@
 {
-  "name": "woovi-challanger-iso8583",
+  "name": "acquirer-server",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "dist/main.js",
   "scripts": {
-    "dev": "node --experimental-strip-types --env-file .env --watch src/server.ts",
+    "dev": "node --no-warnings --experimental-strip-types --env-file .env --watch src/server.ts",
+    "start": "node --env-file .env dist/main.js",
+    "build": "node esbuild.config.js",
     "card:mastercard": "node --experimental-strip-types --env-file .env.scripts scripts/acquirerCardMastercard.ts",
     "card:visa": "node --experimental-strip-types --env-file .env.scripts scripts/acquirerCardVisa.ts",
     "card:pix": "node --experimental-strip-types --env-file .env.scripts scripts/acquirerCardPix.ts",
-    "build": "tsc -b tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
@@ -30,7 +31,9 @@
     "@typescript-eslint/parser": "^6.13.0",
     "@vitest/coverage-v8": "^1.0.0",
     "@vitest/ui": "^1.0.0",
+    "esbuild": "^0.24.2",
     "eslint": "^8.54.0",
+    "glob": "^13.0.0",
     "tsx": "^4.7.0",
     "typescript": "^5.9.3",
     "vitest": "^1.0.0"

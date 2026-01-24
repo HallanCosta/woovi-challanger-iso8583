@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",
+    "module": "ESNext",
     "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "..",
@@ -18,7 +18,7 @@
     "allowImportingTsExtensions": true,
     "composite": true,
     "noEmit": true,
-    "types": ["node", "vitest/globals"],
+    "types": ["node"],
     "rootDirs": ["./src", "../lib"]
   },
   "include": ["src/**/*", "../lib/iso8583/**/*", "../lib/tcp/**/*"],
@@ -26,7 +26,6 @@
     "node_modules",
     "dist",
     "coverage",
-    "vitest.config.ts",
     "**/*.test.ts",
     "**/*.spec.ts"
   ]

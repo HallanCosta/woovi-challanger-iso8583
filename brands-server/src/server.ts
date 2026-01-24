@@ -26,6 +26,7 @@ function startBrandServer(): void {
   );
 
   server.start();
+  console.log(`[TCP][SERVER] Listening on port ${SERVER_TCP_PORT}`);
 }
 
 startBrandServer();

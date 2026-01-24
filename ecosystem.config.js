@@ -4,7 +4,7 @@ module.exports = {
       name: "iso8583-acquirer",
       cwd: "./acquirer-server",
       script: "pnpm",
-      args: "dev",
+      args: "run start",
       env: {
         NODE_ENV: "development",
       },
@@ -19,7 +19,7 @@ module.exports = {
       name: "iso8583-brands",
       cwd: "./brands-server",
       script: "pnpm",
-      args: "dev",
+      args: "run start",
       env: {
         NODE_ENV: "development",
       },
@@ -34,7 +34,7 @@ module.exports = {
       name: "iso8583-issuer",
       cwd: "./issuer-server",
       script: "pnpm",
-      args: "dev",
+      args: "run start",
       env: {
         NODE_ENV: "development",
       },
@@ -48,8 +48,8 @@ module.exports = {
     {
       name: "iso8583-web",
       cwd: "./web",
-      script: "pnpm",
-      args: "dev:production",
+      script: "npx",
+      args: "vite preview --mode production --host 0.0.0.0 --port 4174",
       env: {
         NODE_ENV: "development",
       },

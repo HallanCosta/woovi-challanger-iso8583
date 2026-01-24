@@ -1,11 +1,12 @@
 {
-  "name": "issuer-service",
+  "name": "issuer-server",
   "version": "1.0.0",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/main.js",
   "scripts": {
     "dev": "node --no-warnings --experimental-strip-types --env-file .env --watch src/server.ts",
-    "start": "node --no-warnings --experimental-strip-types --env-file .env src/server.ts",
+    "start": "node --env-file .env dist/main.js",
+    "build": "node esbuild.config.js",
     "type-check": "tsc --noEmit",
     "list:cards": "node --no-warnings --experimental-strip-types --env-file .env scripts/listCards.ts",
     "list:accounts": "node --no-warnings --experimental-strip-types --env-file .env scripts/listAccounts.ts",
@@ -29,6 +30,8 @@
     "@types/koa-bodyparser": "^4.3.12",
     "@types/koa__cors": "^5.0.0",
     "@types/node": "^24.9.2",
+    "esbuild": "^0.24.2",
+    "glob": "^13.0.0",
     "typescript": "^5.9.3"
   }
 }

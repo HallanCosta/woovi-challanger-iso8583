@@ -16,5 +16,5 @@ const HTTP_PORT = Number(process.env.SERVER_HTTP_HTTP_PORT || 9100);
 
 app.listen(HTTP_PORT, async () => {
   await establishConnectionBrand();
-  console.log(`[HTTP] Server listening at localhost:${HTTP_PORT}`);
+  console.log(`[HTTP][ACQUIRER] Listening at http://localhost:${HTTP_PORT}`);
 });

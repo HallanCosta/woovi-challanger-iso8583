@@ -1,0 +1,5 @@
+packages:
+  - acquirer-server
+  - brands-server
+  - issuer-server
+  - web
