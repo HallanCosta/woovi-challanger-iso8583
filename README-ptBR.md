@@ -5,11 +5,12 @@
 ---
 
 ## ☁️ Live demo
-- **Produção (Testador web):** https://iso8583.hallancosta.com (ON) 🟢
-- **Produção (API):** https://server-iso8583.hallancosta.com (ON) 🟢
+- **Produção (WEB):** https://iso8583.hallancosta.com (ON) 🟢
+- **Produção (API ACQUIRER):** https://iso8583-acquirer-server.hallancosta.com (ON) 🟢
+- **Produção (API ISSUER):** https://iso8583-issuer-server.hallancosta.com (ON) 🟢
 
 ## 📸 Pré-visualização
-<img src="https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/web/screenshots/transaction-approved.png?raw=true">
+<img src="https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/web/screenshots/screen.png?raw=true">
 
 Simulador de transações ISO 8583 com um Acquirer conectado a um Issuer.
 
