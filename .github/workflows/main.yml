@@ -1,0 +1,87 @@
+name: 🚀 Deploy to Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+     - main
+
+jobs:
+  deploy:
+    name: 🚀 Deployment to Production
+    runs-on: ubuntu-latest
+
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v4
+
+      - name: 🕒 Generate timestamp to update version project
+        run: echo "timestamp=$(date +%s)" >> $GITHUB_ENV
+
+      - name: 🔨 Creating .env files (SERVERS)
+        run: |
+          echo -n "${{ secrets.PRODUCTION_DEPLOY_ENV_ACQUIRER }}" | tr -d '\r' > ./acquirer-server/.env
+          echo -e "\nAPP_VERSION=${{ env.timestamp }}" >> ./acquirer-server/.env
+
+          echo -n "${{ secrets.PRODUCTION_DEPLOY_ENV_BRANDS }}" | tr -d '\r' > ./brands-server/.env
+          echo -e "\nAPP_VERSION=${{ env.timestamp }}" >> ./brands-server/.env
+
+          echo -n "${{ secrets.PRODUCTION_DEPLOY_ENV_ISSUER }}" | tr -d '\r' > ./issuer-server/.env
+          echo -e "\nAPP_VERSION=${{ env.timestamp }}" >> ./issuer-server/.env
+
+      - name: 🔨 Creating .env file (WEB)
+        run: |
+          echo -n "${{ secrets.PRODUCTION_DEPLOY_ENV_WEB }}" | tr -d '\r' > ./web/.env.production
+          echo -e "\nAPP_VERSION=${{ env.timestamp }}" >> ./web/.env.production
+
+      - name: 📦 Install pnpm
+        run: npm install -g pnpm@10.0.0
+
+      - name: 🔧 Install all dependencies
+        run: pnpm install:all
+
+      - name: 👷 Building all projects
+        run: pnpm build
+
+      - name: 🚀 Deploy to Production server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          ARGS: '-rlgoDzvc -i'
+          SOURCE: '.'
+          REMOTE_HOST: ${{ secrets.PRODUCTION_HOST }}
+          REMOTE_USER: ${{ secrets.PRODUCTION_SUDO_USERNAME }}
+          EXCLUDE: |
+            /.git/
+            /.github/
+            /tb-data/
+            /scripts/
+            /vitest.config.ts
+            /Dockerfile
+            /.dockerignore
+            /.eslint*
+            /.prettier*
+            /tsconfig*.json
+            /vitest.config.*
+            /coverage/
+            /acquirer-server/src/
+            /brands-server/src/
+            /issuer-server/src/
+            /web/src/
+            /web/.env*
+            /web/vite.config.ts
+            *.log
+            .DS_Store
+          TARGET: ${{ secrets.PRODUCTION_PROJECT_DIR }}
+          SCRIPT_AFTER: |
+            cd ${{ secrets.PRODUCTION_PROJECT_DIR }}
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use --lts
+            echo "Starting containers with PNPM..."
+            pnpm start:production
+            sleep 10
+            echo "Restarting production servers..."
+            pnpm restart:production
