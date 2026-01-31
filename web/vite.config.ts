@@ -19,5 +19,9 @@ export default defineConfig({
     host: true,
     port: 4174,
     allowedHosts: ["iso8583.hallancosta.com"]
+  },
+  preview: {
+    host: true,
+    allowedHosts: ["iso8583.hallancosta.com"]
   }
 })

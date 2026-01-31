@@ -14,7 +14,7 @@ app.use(router.routes()).use(router.allowedMethods());
 
 const HTTP_PORT = Number(process.env.SERVER_HTTP_HTTP_PORT || 9100);
 
-app.listen(HTTP_PORT, async () => {
+app.listen(HTTP_PORT, '0.0.0.0', async () => {
   await establishConnectionBrand();
   console.log(`[HTTP][ACQUIRER] Listening at http://localhost:${HTTP_PORT}`);
 });

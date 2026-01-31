@@ -30,5 +30,5 @@ export const getTbClient = (): any => {
 
 export const closeTbClient = async () => {
   console.log('[TB] Closing client');
-  process.exit()
+  client = null;
 };

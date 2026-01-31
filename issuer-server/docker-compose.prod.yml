@@ -1,0 +1,24 @@
+services:
+  tigerbeetle:
+    image: ghcr.io/tigerbeetle/tigerbeetle:0.16.66
+    container_name: tb-cluster
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_NICE
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        if [ ! -f /data/cluster.tigerbeetle ]; then
+          /tigerbeetle format --cluster=0 --replica=0 --replica-count=1 /data/cluster.tigerbeetle
+        fi
+        exec /tigerbeetle start --addresses=0.0.0.0:5555 /data/cluster.tigerbeetle
+    ports:
+      - "5555:5555"
+      - "5555:5555/udp"
+    volumes:
+      - ./tb-data:/data
+
+volumes:
+  tb-data:
