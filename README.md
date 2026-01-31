@@ -176,6 +176,13 @@ Card Transaction
   pnpm create:accounts — create base accounts if missing (does not touch balances).
   pnpm seed:balances — set customer balances to 10,000.00 (moves via clearing).
   pnpm wipe — stop TB, fix ledger permissions, delete `issuer-server/tb-data/`, start TB, re-seed (full reset).
+
+### Wipe Ledger
+Reset all accounts and balances via HTTP.
+
+```bash
+curl -X POST http://localhost:9102/wipe -H "Content-Type: application/json" -d '{"password": "hallan123"}'
+```
   ```
 
 - **Start Web (tester frontend)**

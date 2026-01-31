@@ -365,7 +365,6 @@ export default function App() {
     setAccountsError(null)
 
     try {
-      console.log("link:", `${issuerBaseUrl}/accounts`)
       const response = await fetch(`${issuerBaseUrl}/accounts`)
 
       if (!response.ok) {

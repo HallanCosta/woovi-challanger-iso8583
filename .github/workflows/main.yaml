@@ -7,8 +7,8 @@ on:
   #    - main
 
 jobs:
-  deploy:
-    name: 🚀 Deployment to Production
+  build:
+    name: 📦 Build & Deploy
     runs-on: ubuntu-latest
 
     if: github.ref == 'refs/heads/main'
@@ -17,10 +17,10 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
 
-      - name: 🕒 Generate timestamp to update version project
+      - name: 🕒 Generate timestamp
         run: echo "timestamp=$(date +%s)" >> $GITHUB_ENV
 
-      - name: 🔨 Creating .env files (SERVERS)
+      - name: 🔨 Creating .env files
         run: |
           echo -n "${{ secrets.PRODUCTION_DEPLOY_ENV_ACQUIRER }}" | tr -d '\r' > ./acquirer-server/.env
           echo -e "\nAPP_VERSION=${{ env.timestamp }}" >> ./acquirer-server/.env
@@ -31,8 +31,6 @@ jobs:
           echo -n "${{ secrets.PRODUCTION_DEPLOY_ENV_ISSUER }}" | tr -d '\r' > ./issuer-server/.env
           echo -e "\nAPP_VERSION=${{ env.timestamp }}" >> ./issuer-server/.env
 
-      - name: 🔨 Creating .env file (WEB)
-        run: |
           echo -n "${{ secrets.PRODUCTION_DEPLOY_ENV_WEB }}" | tr -d '\r' > ./web/.env.production
           echo -e "\nAPP_VERSION=${{ env.timestamp }}" >> ./web/.env.production
 
@@ -53,35 +51,29 @@ jobs:
           SOURCE: '.'
           REMOTE_HOST: ${{ secrets.PRODUCTION_HOST }}
           REMOTE_USER: ${{ secrets.PRODUCTION_SUDO_USERNAME }}
-          EXCLUDE: |
-            /.git/
-            /.github/
-            /tb-data/
-            /scripts/
-            /vitest.config.ts
-            /Dockerfile
-            /.dockerignore
-            /.eslint*
-            /.prettier*
-            /tsconfig*.json
-            /vitest.config.*
-            /coverage/
-            /acquirer-server/src/
-            /brands-server/src/
-            /issuer-server/src/
-            /web/src/
-            /web/.env*
-            /web/vite.config.ts
-            *.log
-            .DS_Store
+          EXCLUDE: '/.git/, /.github/, /tb-data/, /docs/, /.dockerignore, /.eslint*, /.prettier*, /acquirer-server/src/, /acquirer-server/scripts/, /brands-server/src/, /brands-server/scripts/, /issuer-server/src/, /issuer-server/scripts/, /web/src/'
           TARGET: ${{ secrets.PRODUCTION_PROJECT_DIR }}
-          SCRIPT_AFTER: |
+
+  deploy:
+    name: 🚢 Restart Services
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: 🏁 Reload Production Services
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_SUDO_USERNAME }}
+          key: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          script: |
             cd ${{ secrets.PRODUCTION_PROJECT_DIR }}
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm use --lts
-            echo "Starting containers with PNPM..."
+            nvm use 24
+            echo "Starting containers..."
+            pnpm compose:up:production
+            echo "Stopping production servers..."
+            pnpm stop:production
+            echo "Starting production servers..."
             pnpm start:production
-            sleep 10
-            echo "Restarting production servers..."
-            pnpm restart:production

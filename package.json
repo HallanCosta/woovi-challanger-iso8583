@@ -1,5 +1,5 @@
 {
-  "name": "woovi-iso8583-monorepo",
+  "name": "woovi-iso8583",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -10,19 +10,18 @@
     "build:issuer": "cd issuer-server && pnpm build",
     "build:web": "cd web && pnpm build",
     "clean": "rm -rf acquirer-server/dist brands-server/dist issuer-server/dist web/dist",
-    "start": "concurrently \"pnpm start:acquirer\" \"pnpm start:brands\" \"pnpm start:issuer\" \"pnpm start:web\"",
-    "start:acquirer": "cd acquirer-server && pnpm start",
-    "start:brands": "cd brands-server && pnpm start",
-    "start:issuer": "cd issuer-server && pnpm start",
-    "start:web": "cd web && pnpm start",
-    "start:production": "pm2 start ecosystem.config.cjs",
-    "stop:production": "pm2 stop ecosystem.config.cjs",
-    "restart:production": "pm2 restart ecosystem.config.cjs",
+    "start:production": "cd issuer-server && pm2 start ecosystem.config.cjs && cd ../acquirer-server && pm2 start ecosystem.config.cjs && cd ../brands-server && pm2 start ecosystem.config.cjs && cd ../web && pm2 start ecosystem.config.cjs",
+    "stop:production": "cd issuer-server && pm2 stop ecosystem.config.cjs && cd ../acquirer-server && pm2 stop ecosystem.config.cjs && cd ../brands-server && pm2 stop ecosystem.config.cjs && cd ../web && pm2 stop ecosystem.config.cjs",
+    "restart:production": "cd issuer-server && pm2 restart ecosystem.config.cjs && cd ../acquirer-server && pm2 restart ecosystem.config.cjs && cd ../brands-server && pm2 restart ecosystem.config.cjs && cd ../web && pm2 restart ecosystem.config.cjs",
+    "reload:production": "cd issuer-server && pm2 reload ecosystem.config.cjs && cd ../acquirer-server && pm2 reload ecosystem.config.cjs && cd ../brands-server && pm2 reload ecosystem.config.cjs && cd ../web && pm2 reload ecosystem.config.cjs",
+    "compose:up": "cd issuer-server && docker compose -f docker-compose.yml up -d",
+    "compose:down": "cd issuer-server && docker compose -f docker-compose.yml down",
+    "compose:restart": "cd issuer-server && docker compose -f docker-compose.yml restart",
+    "compose:up:production": "cd issuer-server && docker compose -f docker-compose.prod.yml up -d",
+    "compose:down:production": "cd issuer-server && docker compose -f docker-compose.prod.yml down",
+    "compose:restart:production": "cd issuer-server && docker compose -f docker-compose.prod.yml restart",
     "logs:production": "pm2 logs",
     "install:all": "pnpm install && cd acquirer-server && pnpm install && cd ../brands-server && pnpm install && cd ../issuer-server && pnpm install && cd ../web && pnpm install"
-  },
-  "devDependencies": {
-    "concurrently": "^9.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -30,5 +29,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "Woovi ISO8583 Challenge - Monorepo"
+  "description": "Woovi ISO8583 Challenge"
 }

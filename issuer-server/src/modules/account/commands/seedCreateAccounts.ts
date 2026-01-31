@@ -206,6 +206,7 @@ export const seedInitialBalances = async (userIds?: bigint[]): Promise<void> => 
 export const seedCreateAccounts = async (): Promise<void> => {
   const accounts = buildCoreAccounts();
   await persistAccounts(accounts);
+  console.log('[STARTUP] Accounts seeded successfully');
 
   // Seed initial balance for users.
   await seedInitialBalances();

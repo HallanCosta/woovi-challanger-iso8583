@@ -21,9 +21,10 @@
   "dependencies": {
     "@koa/cors": "^5.0.0",
     "@koa/router": "^15.1.0",
+    "dotenv": "^17.2.3",
     "koa": "^3.1.1",
     "koa-bodyparser": "^4.4.1",
-    "tigerbeetle-node": "^0.16.66"
+    "tigerbeetle-node": "0.16.66"
   },
   "devDependencies": {
     "@types/koa": "^3.0.1",

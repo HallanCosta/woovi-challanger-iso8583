@@ -11,4 +11,4 @@ RUN npm install \
   && npm run type-check \
   && npm prune --production
 
-CMD ["node", "--experimental-strip-types", "src/server.ts"]
+CMD ["node", "--experimental-strip-types", "dist/main.js"]

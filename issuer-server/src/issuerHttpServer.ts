@@ -12,7 +12,7 @@ export function startIssuerHttpServer(): void {
   app.use(bodyParser());
   app.use(router.routes()).use(router.allowedMethods());
 
-  app.listen(HTTP_PORT, () => {
-    console.log(`[HTTP][ISSUER] Listening at http://localhost:${HTTP_PORT}`);
+  app.listen(HTTP_PORT, '0.0.0.0', () => {
+    console.log(`[HTTP][ISSUER] Listening at http://0.0.0.0:${HTTP_PORT}`);
   });
 }
