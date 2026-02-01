@@ -160,6 +160,7 @@ Card Transaction
   ```sh
   cd issuer-server
   pnpm install
+  sudo sysctl -w kernel.io_uring_disabled=0 # for macOS or CPU arm64 (O TigerBeetle precisa de `io_uring` habilitado. Sem isso, o container não inicia.)
   pnpm compose:up
   pnpm create:accounts
   pnpm dev
@@ -195,7 +196,7 @@ Reseta todas as contas e saldos via HTTP.
 curl -X POST http://localhost:9102/wipe -H "Content-Type: application/json" -d '{"password": "hallan123"}'
 ```
 
-## 😅 Desafios
+## 🚢 Desafios
 
 - Tamanhos de campo binário vs. ASCII (BCD vs. ASCII)
 - Bitmap precisa refletir exatamente os campos enviados
