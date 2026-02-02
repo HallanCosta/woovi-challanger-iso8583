@@ -189,12 +189,11 @@ Card Transaction
 - `pnpm seed:balances` — deixa saldos dos clientes em 10.000,00 (via clearing).
 - `pnpm wipe` — para o TB, ajusta permissões, remove `issuer-server/tb-data/`, sobe TB e reaplica seeds.
 
-### Wipe Ledger
+- **Resetar Ledger**
 Reseta todas as contas e saldos via HTTP.
-
-```bash
-curl -X POST http://localhost:9102/wipe -H "Content-Type: application/json" -d '{"password": "hallan123"}'
-```
+  ```bash
+  curl -X POST http://localhost:9102/wipe -H "Content-Type: application/json" -d '{"password": "hallan123"}'
+  ```
 
 ## 🚢 Desafios
 
