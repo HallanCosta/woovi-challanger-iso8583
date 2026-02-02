@@ -85,6 +85,8 @@ Card Transaction
 ## Test in Postman
 - [Download Postman Collection v2.0](https://github.com/HallanCosta/woovi-challanger-iso8583/blob/main/docs/api.postman_collection.json)
 
+TigerBeetle requires `io_uring` to be enabled. Without it, the container will not start.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -159,6 +161,7 @@ Card Transaction
   ```sh
   cd issuer-server
   pnpm install
+  sudo sysctl -w kernel.io_uring_disabled=0 # for macOS or CPU arm64
   pnpm compose:up
   pnpm create:accounts
   pnpm dev
@@ -176,14 +179,13 @@ Card Transaction
   pnpm create:accounts — create base accounts if missing (does not touch balances).
   pnpm seed:balances — set customer balances to 10,000.00 (moves via clearing).
   pnpm wipe — stop TB, fix ledger permissions, delete `issuer-server/tb-data/`, start TB, re-seed (full reset).
-
+```
 ### Wipe Ledger
 Reset all accounts and balances via HTTP.
 
 ```bash
 curl -X POST http://localhost:9102/wipe -H "Content-Type: application/json" -d '{"password": "hallan123"}'
 ```
-  ```
 
 - **Start Web (tester frontend)**
   ```sh
@@ -196,8 +198,7 @@ curl -X POST http://localhost:9102/wipe -H "Content-Type: application/json" -d '
   ```
 
 
-
-## 😅 Challenges
+## 🚢 Challenges
 
 - Binary vs ASCII field sizes (BCD vs ASCII)
 - Bitmap must match the exact field sequence sent to the simulator

@@ -14,9 +14,12 @@
     "seed:balances": "node --no-warnings --experimental-strip-types --env-file .env scripts/seedBalances.ts",
     "chown:ledger": "docker run --rm -v \"$(pwd)/tb-data:/data\" busybox chown -R $(id -u):$(id -g) /data",
     "wipe": "pnpm run compose:down && pnpm run chown:ledger && rm -rf tb-data/ && pnpm run compose:up && node --no-warnings --experimental-strip-types --env-file .env scripts/wipe.ts",
-    "compose:up": "docker compose up -d",
-    "compose:restart": "docker compose restart",
-    "compose:down": "docker compose down"
+    "compose:up": "docker compose -f docker-compose.yml up -d",
+    "compose:down": "docker compose -f docker-compose.yml down",
+    "compose:restart": "docker compose -f docker-compose.yml restart",
+    "compose:up:production": "docker compose -f docker-compose.prod.yml up -d",
+    "compose:down:production": "docker compose -f docker-compose.prod.yml down",
+    "compose:restart:production": "docker compose -f docker-compose.prod.yml restart"
   },
   "dependencies": {
     "@koa/cors": "^5.0.0",
