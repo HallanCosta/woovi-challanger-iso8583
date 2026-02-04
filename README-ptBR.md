@@ -247,6 +247,8 @@ woovi-challanger-iso8583/
 
 ## 👨‍💻 Contribuidores
 
-[<img width="115" height="115" src="https://github.com/HallanCosta.png"  /><br><sub>@HallanCosta</sub>](https://github.com/HallanCosta)
+|Autor|
+|--|
+|[<img src="https://github.com/hallancosta.png" width="115"><br><div align="center"><sub>@HallanCosta</sub></div>](https://github.com/hallancosta)|
 
 ⭐ Se este projeto foi útil para você, considere deixar uma estrela no repositório!
